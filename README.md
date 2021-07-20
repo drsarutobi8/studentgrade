@@ -5,8 +5,8 @@ Using Following Quarkus Technology
 * Quarkus Grpc Service and Client
 * Quarkus Hibernate Reactive Panache
 
-# To Start Server 
-## Start Result Server (Using H2 as Database server)
+# To Start Servers
+## Start Result Server (Using H2 as in-memory Database server)
 > ./gradlew :resultService:quarkusDev
 ## Start Student Server
 ### Start Database Server (MariaDB 10.6.3)
