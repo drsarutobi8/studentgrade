@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "app/src/main/java",
+        "app/src/test/java",
+        "list/src/main/proto",
+        "list/build/classes/java/quarkus-generated-sources",
+        "utilities/src/main/java",
+        "utilities/src/test/java",
+        "src/main/java"
+    ]
+}
