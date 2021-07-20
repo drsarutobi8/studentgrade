@@ -4,7 +4,7 @@ import com.students_information.stubs.result.ResultRequest;
 import com.students_information.stubs.result.ResultResponse;
 import com.students_information.stubs.result.ResultServiceGrpc;
 import com.students_information.stubs.student.*;
-//import dao.ResultDao;
+
 import dao.StudentDao;
 import domain.Result;
 import domain.Student;
@@ -15,15 +15,22 @@ import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+//import javax.inject.Inject;
+
+import io.smallrye.mutiny.Uni;
+//import org.hibernate.reactive.mutiny.Mutiny;
 
 @GrpcService
 @Blocking
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
+    //Mutiny.Session session;
+
     // Let's use a logger to log everything that we want
     private static final Logger logger = Logger.getLogger(StudentServiceImpl.class.getName());
 
@@ -38,8 +45,8 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         String studentId = request.getStudentId();// the student ID should be passed with the request message
 
         try{
-            Student student = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
-
+            Uni<Student> studentUni = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
+            Student student = studentUni.await().indefinitely();
             /*
                 The getResults method will help us to fetch the results for the student from the result service.
                 this method will call the result service through its client and bring back the result as a list of strings

@@ -2,24 +2,43 @@ package dao;
 
 import domain.Student;
 
+//import java.util.NoSuchElementException;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import java.util.NoSuchElementException;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+//import javax.inject.Inject;
+//import javax.persistence.EntityManager;
+//import javax.persistence.EntityManagerFactory;
+//import javax.persistence.Persistence;
+
+import io.smallrye.mutiny.Uni;
+import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+//import org.hibernate.reactive.mutiny.Mutiny;
+//import io.vertx.mutiny.mysqlclient.MySqlPool;
 
 @ApplicationScoped
 public class StudentDao implements PanacheRepository<Student> {
+    public Uni<Student> findByStudentId(String studentId){
+        return find("studentId", studentId).firstResult();
+    }
+}
+/**
+ * Panache ORM Edition
+ * 
+ * import io.quarkus.hibernate.orm.panache.PanacheRepository;
+ * 
+ * public class StudentDao implements PanacheRepository<Student> {
     public Student findByStudentId(String studentId){
         return find("studentId", studentId).firstResult();
     }
+}
+ */
 
-    /*
-    @Inject
-    private EntityManager em;
-
+/**
+ * ORM Edition
+public class StudentDao {
+    private EntityManager em; //BUG??, CANNOT INJECT HERE
+    public StudenDao(EntityManager em) {
+        this.em = em;
+    }
     public Student findById(String studentId){
 
         // // We use entity managers to manage our two entities.
@@ -40,5 +59,5 @@ public class StudentDao implements PanacheRepository<Student> {
         // If everything worked fine, return the result.
         return student;
     }
-*/
 }
+**/

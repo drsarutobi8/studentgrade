@@ -8,5 +8,5 @@ plugins {
     id("io.quarkus") apply false
     id("io.freefair.lombok") apply false
     id("org.kordamp.gradle.jandex") apply false
+    id("com.palantir.docker-run") apply false
 }
-
