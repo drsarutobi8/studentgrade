@@ -6,11 +6,15 @@ Using Following Quarkus Technology
 * Quarkus Hibernate Reactive Panache
 
 # To Start Servers
-## Start Result Server (Using H2 as in-memory Database server)
+## Start Result Server 
+### Start Quarkus (Using H2 as in-memory Database server)
 > ./gradlew :resultService:quarkusDev
+
 ## Start Student Server
 ### Start Database Server (MariaDB 10.6.3)
+
 > ./gradlew :studentServer:dockerRun
+
 Please make sure you see the log as following message to make sure the server is successfully initialized (> 5 min on my machine)
 
 > 2021-07-20 22:31:39 0 [Note] mysqld: ready for connections.
