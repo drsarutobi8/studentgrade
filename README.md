@@ -12,9 +12,13 @@ Using Following Quarkus Technology
 ### Start Database Server (MariaDB 10.6.3)
 > ./gradlew :studentServer:dockerRun
 Please make sure you see the log as following message to make sure the server is successfully initialized (> 5 min on my machine)
-2021-07-20 22:31:39 0 [Note] mysqld: ready for connections.
+
+> 2021-07-20 22:31:39 0 [Note] mysqld: ready for connections.
+
 ### Start Quarkus
 > ./gradlew :studentService:quarkusDev
 
 # To Test
 ## Using BloomRPC
+* Result Server at port 9000
+* Student Server at port 9100
