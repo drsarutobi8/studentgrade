@@ -15,7 +15,7 @@ Using Following Quarkus Technology
 
 > ./gradlew :studentServer:dockerRun
 
-Please make sure you see the log as following message to make sure the server is successfully initialized (> 5 min on my machine)
+Please confirm the following log message to make sure the server is successfully initialized (> 5 min on my machine)
 
 > 2021-07-20 22:31:39 0 [Note] mysqld: ready for connections.
 
