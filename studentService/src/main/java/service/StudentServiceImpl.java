@@ -26,8 +26,8 @@ import java.util.logging.Logger;
 import io.smallrye.mutiny.Uni;
 //import org.hibernate.reactive.mutiny.Mutiny;
 
-@GrpcService
-@Blocking
+//@GrpcService
+//@Blocking
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
     //Mutiny.Session session;
 

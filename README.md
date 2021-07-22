@@ -13,9 +13,17 @@ Using Following Quarkus Technology
 ## Start Student Server
 ### Start Database Server (MariaDB 10.6.3)
 
-> ./gradlew :studentServer:dockerRun
+> ./gradlew :studentService:dockerRun
 
 Please confirm the following log message to make sure the server is successfully initialized (> 5 min on my machine)
+```
+docker ps
+CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+cc730644109a   mariadb:10.6.3   "docker-entrypoint.s…"   41 seconds ago   Up 34 seconds   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp   mariadb
+
+docker logs cc730644109a -f
+
+```
 
 > 2021-07-20 22:31:39 0 [Note] mysqld: ready for connections.
 
