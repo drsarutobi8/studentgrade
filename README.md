@@ -2,15 +2,17 @@
 This project will implement the example of [How To Create gRPC Microservices with JPA.](https://medium.com/geekculture/how-to-create-grpc-microservices-with-jpa-b3e804b4d91e) By Hashan Mahesh implementing Quarkus 2.0.2 and Gradle Kotlin 7.0.2
 
 Using Following Quarkus Technology
-* Quarkus Grpc Service and Client
-* Quarkus Hibernate Reactive Panache
+* Quarkus Grpc Service and Client (Enabling TLS)
+* Quarkus Hibernate Reactive Panache and Hibernate ORM Panache
 
 # To Start Servers
 ## Start Result Server 
-### Start Quarkus (Using H2 as in-memory Database server)
+Result Service uses H2 as in-memory Database server, Hibernate ORM Panache (non-reactive) and blocking stub. 
+### Start Quarkus 
 > ./gradlew :resultService:quarkusDev
 
 ## Start Student Server
+Student Service uses MariaDB Database Server, Hibernate Reactive Panache and non-blocking stub.
 ### Start Database Server (MariaDB 10.6.3)
 
 > ./gradlew :studentService:dockerRun
