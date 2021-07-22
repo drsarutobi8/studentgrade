@@ -34,3 +34,4 @@ docker logs cc730644109a -f
 ## Using BloomRPC
 * Result Server at port 9000
 * Student Server at port 9100
+* Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "localhost"
