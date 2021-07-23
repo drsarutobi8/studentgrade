@@ -1,5 +1,5 @@
 {
-  "id": "figker-admin",
+  "id": "studentgrade-admin",
   "realm": "studentgrade-admin",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
@@ -50,7 +50,7 @@
         "name": "admin",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       },
       {
@@ -58,7 +58,7 @@
         "name": "confidential",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       },
       {
@@ -67,7 +67,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       },
       {
@@ -76,16 +76,16 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       },
       {
         "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-        "name": "default-roles-figker-admin",
+        "name": "default-roles-studentgrade-admin",
         "description": "${role_default-roles}",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       },
       {
@@ -93,7 +93,7 @@
         "name": "user",
         "composite": false,
         "clientRole": false,
-        "containerId": "figker-admin",
+        "containerId": "studentgrade-admin",
         "attributes": {}
       }
     ],
@@ -434,11 +434,11 @@
   "groups": [],
   "defaultRole": {
     "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-    "name": "default-roles-figker-admin",
+    "name": "default-roles-studentgrade-admin",
     "description": "${role_default-roles}",
     "composite": false,
     "clientRole": false,
-    "containerId": "figker-admin"
+    "containerId": "studentgrade-admin"
   },
   "requiredCredentials": [
     "password"
@@ -485,7 +485,7 @@
       "enabled": true,
       "totp": false,
       "emailVerified": false,
-      "email": "service-account-figker-sys-core-service@placeholder.org",
+      "email": "service-account-studentgrade-sys-core-service@placeholder.org",
       "serviceAccountClientId": "studentgrade-service",
       "disableableCredentialTypes": [],
       "requiredActions": [],
@@ -563,13 +563,13 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/figker-admin/account/",
+      "baseUrl": "/realms/studentgrade-admin/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/figker-admin/account/*"
+        "/realms/studentgrade-admin/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
