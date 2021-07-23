@@ -1,4 +1,4 @@
-package service;
+package grpcService;
 
 import com.students_information.stubs.result.ResultRequest;
 import com.students_information.stubs.result.ResultResponse;
