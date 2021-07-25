@@ -1,41 +1,26 @@
 package grpcService;
 
+//import javax.annotation.security.RolesAllowed;
+import javax.inject.Inject;
+
+import com.students_information.stubs.result.MutinyResultServiceGrpc;
 import com.students_information.stubs.result.ResultRequest;
 import com.students_information.stubs.result.ResultResponse;
-import com.students_information.stubs.result.MutinyResultServiceGrpc;
-import com.students_information.stubs.student.*;
+import com.students_information.stubs.student.Gender;
+import com.students_information.stubs.student.Grade;
+import com.students_information.stubs.student.MutinyStudentServiceGrpc;
+import com.students_information.stubs.student.StudentRequest;
+import com.students_information.stubs.student.StudentResponse;
 
-import dao.StudentDao;
-import domain.Result;
 import domain.Student;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import service.StudentService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-
-import io.smallrye.mutiny.Uni;
-//import org.hibernate.reactive.mutiny.Mutiny;
-
 @GrpcService
+//@RolesAllowed({"student","teacher"})
 public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentServiceImplBase {
-    //Mutiny.Session session;
-
-    // Let's use a logger to log everything that we want
-    private static final Logger logger = Logger.getLogger(StudentServiceImpl.class.getName());
-
-    // We need to have an instance of the dao class to work with the database
-    private StudentDao studentDao = new StudentDao();
 
     @Inject
     StudentService studentService;

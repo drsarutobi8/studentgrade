@@ -1,18 +1,19 @@
 package service;
 
+import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.students_information.stubs.result.Grade;
 import com.students_information.stubs.result.ResultRequest;
 import com.students_information.stubs.result.ResultResponse;
 import com.students_information.stubs.result.ResultServiceGrpc;
+
 import dao.ResultDao;
 import domain.Result;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcService;
-import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import io.smallrye.mutiny.Uni;
 import io.smallrye.common.annotation.Blocking;
 
 @GrpcService

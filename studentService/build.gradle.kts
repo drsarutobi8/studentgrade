@@ -42,14 +42,10 @@ dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
-    //implementation("io.quarkus:quarkus-hibernate-reactive")
+    implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-reactive-mysql-client")
     implementation("io.quarkus:quarkus-resteasy")
     implementation("io.quarkus:quarkus-resteasy-mutiny")
-
-    //implementation("io.quarkus:quarkus-jdbc-h2")
-    //implementation("io.quarkus:quarkus-hibernate-orm-panache")
-    //runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
@@ -71,20 +67,3 @@ publishing {
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
 }
-
-// dockerRun {
-//     name = "mariadb"
-//     image = "mariadb:10.6.3"
-//     daemonize = true
-//     clean = true
-//     ports("3306:3306")
-//     env(
-//         mapOf(
-//             "MYSQL_ROOT_PASSWORD" to "quarkus_test",
-//             "MYSQL_DATABASE" to "quarkus_test",
-//             "MYSQL_USER" to "quarkus_test",
-//             "MYSQL_PASSWORD" to "quarkus_test"
-//         )
-//     )
-// }
-

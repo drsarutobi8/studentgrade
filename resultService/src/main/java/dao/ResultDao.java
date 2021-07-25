@@ -1,15 +1,9 @@
 package dao;
 
-import java.util.NoSuchElementException;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import domain.Result;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
 public class ResultDao implements PanacheRepository<Result> {

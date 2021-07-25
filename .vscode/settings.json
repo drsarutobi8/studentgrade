@@ -1,11 +1,20 @@
 {
     "java.project.sourcePaths": [
-        "app/src/main/java",
-        "app/src/test/java",
-        "list/src/main/proto",
-        "list/build/classes/java/quarkus-generated-sources",
-        "utilities/src/main/java",
-        "utilities/src/test/java",
-        "src/main/java"
+        "resultApi/src/main/proto",
+        "resultApi/build/classes/java/quarkus-generated-sources/grpc",
+        "resultService/src/main/java",
+        "resultService/src/main/resources",
+        "resultService/src/test/java",
+        "resultService/src/test/resources",
+        "studentApi/src/main/proto",
+        "studentApi/build/classes/java/quarkus-generated-sources/grpc",
+        "studentService/src/main/java",
+        "studentService/src/main/resources",
+        "studentService/src/test/java",
+        "studentService/src/test/resources"
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.referencedLibraries": [
+        "/home/drsarutobi/.gradle/caches/modules-2/files-2.1/**/*.jar"
     ]
 }

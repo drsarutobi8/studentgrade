@@ -1,6 +1,6 @@
 {
-  "id": "studentgrade-admin",
-  "realm": "studentgrade-admin",
+  "id": "studentgrade-realm",
+  "realm": "studentgrade-realm",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
@@ -50,7 +50,7 @@
         "name": "admin",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       },
       {
@@ -58,7 +58,7 @@
         "name": "confidential",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       },
       {
@@ -67,7 +67,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       },
       {
@@ -76,16 +76,16 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       },
       {
         "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-        "name": "default-roles-studentgrade-admin",
+        "name": "default-roles-studentgrade-realm",
         "description": "${role_default-roles}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       },
       {
@@ -93,7 +93,7 @@
         "name": "user",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-admin",
+        "containerId": "studentgrade-realm",
         "attributes": {}
       }
     ],
@@ -434,11 +434,11 @@
   "groups": [],
   "defaultRole": {
     "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-    "name": "default-roles-studentgrade-admin",
+    "name": "default-roles-studentgrade-realm",
     "description": "${role_default-roles}",
     "composite": false,
     "clientRole": false,
-    "containerId": "studentgrade-admin"
+    "containerId": "studentgrade-realm"
   },
   "requiredCredentials": [
     "password"
@@ -521,14 +521,14 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/studentgrade-admin/account/",
+      "baseUrl": "/realms/studentgrade-realm/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/realms/studentgrade-admin/account/*"
+        "/realms/studentgrade-realm/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -563,13 +563,13 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/studentgrade-admin/account/",
+      "baseUrl": "/realms/studentgrade-realm/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/studentgrade-admin/account/*"
+        "/realms/studentgrade-realm/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -730,14 +730,14 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/studentgrade-admin/console/",
+      "baseUrl": "/admin/studentgrade-realm/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/admin/studentgrade-admin/console/*"
+        "/admin/studentgrade-realm/console/*"
       ],
       "webOrigins": [
         "+"

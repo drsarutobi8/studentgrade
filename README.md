@@ -32,8 +32,26 @@ docker logs cc730644109a -f
 ### Start Quarkus
 > ./gradlew :studentService:quarkusDev
 
+### Additional Keycloak Settings
+* Regenerate Secret for client studentgrade-service and copy the value to below curl command
+* Add user 'st1' (John Doe) with password 'st1' (with disabling temporary password) 
+* Assign realm role 'user' and client role 'student'
+* Run below command to get access token
+```
+export access_token=$(\
+    curl -X POST http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/token --user studentgrade-service:<*** REPLACE SECRET HERE ***>   -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
+ )
+```
+* Test that we can get access token by running below command. It should return non-null value
+> echo $access_token 
+
 # To Test
 ## Using BloomRPC
-* Result Server at port 9000
-* Student Server at port 9100
+* Result Server running at localhost port 9000
 * Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "localhost"
+* Student Server running at localhost port 9100
+* Add TLS connection access by adding root certificate "studentService/src/main/resources/tls/ca.pem" and target "localhost"
+* In Metadata section add following json:
+{
+    "authorization": "Bearer <*** REPLACE ACCESS TOKEN HERE ***>"
+}

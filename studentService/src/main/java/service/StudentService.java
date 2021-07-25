@@ -2,11 +2,9 @@ package service;
 
 import dao.StudentDao;
 import domain.Student;
-//import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-//import javax.annotation.security.RolesAllowed;
 import io.smallrye.mutiny.Uni;
 
 //import org.eclipse.microprofile.jwt.JsonWebToken;
