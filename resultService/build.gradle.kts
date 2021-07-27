@@ -32,7 +32,6 @@ dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-orm-panache")
-    //implementation("io.quarkus:quarkus-hibernate-orm")
     implementation("io.quarkus:quarkus-jdbc-h2")
     implementation("io.quarkus:quarkus-resteasy")
     implementation("io.quarkus:quarkus-resteasy-mutiny")

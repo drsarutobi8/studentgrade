@@ -1,4 +1,4 @@
-package grpcService;
+package grpc.server;
 
 //import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -17,6 +17,7 @@ import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import service.StudentService;
+import grpc.ref.Constants;
 
 @GrpcService
 //@RolesAllowed({"student","teacher"})
@@ -38,6 +39,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
             
             //Uni<Student> studentUni = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
             Uni<Student> studentUni = studentService.read(studentId);
+ 
             return fillResults(studentUni);
     }
 

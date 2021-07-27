@@ -1,9 +1,8 @@
-package grpcService;
+package grpc.server;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -31,9 +30,6 @@ import service.StudentService;
 @Slf4j
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
     //Mutiny.Session session;
-
-    // Let's use a logger to log everything that we want
-    private static final Logger logger = Logger.getLogger(StudentServiceImpl.class.getName());
 
     @Inject
     StudentService studentService;

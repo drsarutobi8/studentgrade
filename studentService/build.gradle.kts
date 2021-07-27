@@ -42,13 +42,16 @@ dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
-    implementation("io.quarkus:quarkus-oidc")
+    
     implementation("io.quarkus:quarkus-reactive-mysql-client")
     implementation("io.quarkus:quarkus-resteasy")
     implementation("io.quarkus:quarkus-resteasy-mutiny")
-
+    implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+    implementation("io.quarkus:quarkus-keycloak-authorization")
+    implementation("io.quarkus:quarkus-oidc")
+    implementation("io.rest-assured:rest-assured")
+    
     testImplementation("io.quarkus:quarkus-junit5")
-    testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.assertj:assertj-core")
 }

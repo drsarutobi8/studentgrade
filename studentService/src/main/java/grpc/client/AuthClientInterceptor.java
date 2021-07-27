@@ -1,4 +1,4 @@
-package grpcService;
+package grpc.client;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;

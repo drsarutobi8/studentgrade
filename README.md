@@ -1,5 +1,14 @@
 # studentgrade
-This project will implement the example of [How To Create gRPC Microservices with JPA.](https://medium.com/geekculture/how-to-create-grpc-microservices-with-jpa-b3e804b4d91e) By Hashan Mahesh implementing Quarkus 2.0.2 and Gradle Kotlin 7.0.2
+This project will implement the example of 
+
+[How To Create gRPC Microservices with JPA.](https://medium.com/geekculture/how-to-create-grpc-microservices-with-jpa-b3e804b4d91e) By Hashan Mahesh 
+
+and 
+
+[Securing Java gRPC services with JWT-based authentication](https://sultanov.dev/blog/securing-java-grpc-services-with-jwt-based-authentication/)
+
+
+Implementing Quarkus 2.0.2, MariaDB 10.6.3, Keycloak 14.0.0, and Gradle Kotlin 7.0.2
 
 Using Following Quarkus Technology
 * Quarkus Grpc Service and Client (Enabling TLS)
@@ -38,12 +47,23 @@ docker logs cc730644109a -f
 * Assign realm role 'user' and client role 'student'
 * Run below command to get access token
 ```
-export access_token=$(\
-    curl -X POST http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/token --user studentgrade-service:<*** REPLACE SECRET HERE ***>   -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
- )
+export access_token=$(
+curl -X POST http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/token --user studentgrade-service:30337997-8519-4eb7-928d-1322fba687c5  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
+);
+echo $access_token;
+curl -X POST \
+  http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
 ```
-* Test that we can get access token by running below command. It should return non-null value
-> echo $access_token 
+
+<*** REPLACE SECRET HERE ***> 
+
+```
+curl -X POST \
+  http://localhost:8180/auth/realms/studentgrade-real/protocol/openid-connect/token \
+  -H "Authorization: Bearer ${access_token}" \
+  --data "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" 
+```
+
 
 # To Test
 ## Using BloomRPC
