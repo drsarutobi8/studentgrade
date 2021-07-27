@@ -84,7 +84,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                             authorized = authorized || rolesAllowed.contains(role);
                         }//for
                         if (!authorized) {
-                            status  = Status.PERMISSION_DENIED.withDescription("required roles=".concat(rolesAllowed.toString()));
+                            status  = Status.PERMISSION_DENIED.withDescription("Required roles=".concat(rolesAllowed.toString()));
                         }//if
                     }//if
                     else {
