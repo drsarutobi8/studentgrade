@@ -1,6 +1,5 @@
-package grpc.server;
+package grpc.service;
 
-//import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 
 import com.students_information.stubs.result.MutinyResultServiceGrpc;

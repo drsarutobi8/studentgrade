@@ -1,4 +1,4 @@
-package grpc.server;
+package grpc.service;
 
 import java.util.ArrayList;
 import java.util.List;

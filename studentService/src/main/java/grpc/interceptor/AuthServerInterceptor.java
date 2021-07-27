@@ -1,8 +1,12 @@
-package grpc.server;
+package grpc.interceptor;
 
 import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.Response.Status.OK;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -10,10 +14,13 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Prioritized;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.AccessToken.Access;
 
+import grpc.ref.Constants;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.ForwardingServerCall.SimpleForwardingServerCall;
@@ -23,7 +30,6 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.restassured.path.json.JsonPath;
-
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -31,12 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     static final Metadata.Key<String> CUSTOM_HEADER_KEY = Metadata.Key.of("custom_server_header_key",
             Metadata.ASCII_STRING_MARSHALLER);
-    static final Metadata.Key<String> AUTHORIZATION_KEY = Metadata.Key.of("authorization",
-            Metadata.ASCII_STRING_MARSHALLER);
-
-    // https://stackoverflow.com/questions/48274251/keycloak-access-token-validation-end-point
-//    @Inject
-//    OidcClients clients;
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
@@ -47,13 +47,11 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                 .collect(Collectors.toMap(Metadata.Key::name, requestHeaders::get))
                 .forEach((key, value) -> log.info(key + "=" + value));
         Status status = Status.UNAUTHENTICATED.withDescription("Authorization token is missing");
-        Context ctx = Context.current();
-        if (requestHeaders.containsKey(AUTHORIZATION_KEY)) {
-            String authKey = requestHeaders.get(AUTHORIZATION_KEY).substring(7);
+        if (requestHeaders.containsKey(Constants.AUTHORIZATION_METADATA_KEY)) {
+            String authKey = requestHeaders.get(Constants.AUTHORIZATION_METADATA_KEY).substring(Constants.BEARER_TYPE.length()).trim();
             try {
                 AccessToken token = this.validateReceivedAuthorizationKey(authKey);
                 if (token!=null) {
-                    //SET CONTEXT HERE FROM VALIDATED TOKEN
                     log.info(String.format("iss = %s%n", token.getIssuer()));
                     log.info(String.format("sub = %s%n", token.getSubject()));
                     log.info(String.format("typ = %s%n", token.getType()));
@@ -63,12 +61,44 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                     if (token.getPreferredUsername()!=null) {
                         log.info("userName=".concat(token.getPreferredUsername()));
                     }//if
-                    if (token.getRealmAccess()!=null && token.getRealmAccess().getRoles()!=null) {
-                        Set<String> roles = token.getRealmAccess().getRoles();
-                        log.info("roles=".concat(roles.toString()));
-                    }//if
 
-                    return Contexts.interceptCall(ctx, call, requestHeaders, next);   
+                    //authorization here
+                    boolean authorized = false;
+                    String methodRolesAllowedConfigKey = call.getMethodDescriptor().getFullMethodName().concat(".rolesAllowed");
+                    Optional<String> rolesAllowedOptional = ConfigProvider.getConfig().getOptionalValue(methodRolesAllowedConfigKey, String.class);
+                    if (rolesAllowedOptional.isPresent()) {
+                        Set<String> rolesAllowed = Arrays.asList(rolesAllowedOptional.get().split(",")).stream().collect(Collectors.toSet());
+
+                        Set<String> roles = new HashSet<String>();
+                        if (token.getRealmAccess()!=null && token.getRealmAccess().getRoles()!=null) {
+                            roles.addAll(token.getRealmAccess().getRoles());
+                        }//if
+                        Map<String,Access> mapAccess  = token.getResourceAccess();
+                        for (Map.Entry<String,Access> entry:mapAccess.entrySet()) {
+                            Access access   = entry.getValue();
+                            roles.addAll(access.getRoles());
+                        }//for
+                        log.info("roles=".concat(roles.toString()));
+
+                        for (String role:roles) {
+                            authorized = authorized || rolesAllowed.contains(role);
+                        }//for
+                        if (!authorized) {
+                            status  = Status.PERMISSION_DENIED.withDescription("required roles=".concat(rolesAllowed.toString()));
+                        }//if
+                    }//if
+                    else {
+                        log.warn("The rolesAllowed parameter ".concat(methodRolesAllowedConfigKey).concat(" is not defined."));
+                        authorized =true;
+                    }//else
+                    //SET CONTEXT HERE FROM VALIDATED TOKEN
+                    if (authorized) {
+                        Context ctx = Context.current()
+                                        .withValue(Constants.CLIENT_ID_CONTEXT_KEY, token.getSubject())
+                                        .withValue(Constants.ACCESS_TOKEN_CONTEXT_KEY, token);
+
+                        return Contexts.interceptCall(ctx, call, requestHeaders, next);   
+                    }//if
                 }//if         
             }//try
             catch (AuthServerInterceptorException e) {
@@ -79,22 +109,19 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             }//catch
         } // else
 
-//        if (status != null) {
-            call.close(status, requestHeaders);
-            // return new ServerCall.Listener<>() {
-            // // noop
-            // };
-            return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
-                // @Override
-                // public void sendHeaders(Metadata responseHeaders) {
-                // responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
-                // super.sendHeaders(responseHeaders);
-                // }
-            }, requestHeaders);
-//        }
+        call.close(status, requestHeaders);
+        return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
+            // @Override
+            // public void sendHeaders(Metadata responseHeaders) {
+            // responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
+            // super.sendHeaders(responseHeaders);
+            // }
+        }, requestHeaders);
+
     }
 
     /**
+     * According to https://stackoverflow.com/questions/48274251/keycloak-access-token-validation-end-point
      * Access http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
      * @param authKey
      */

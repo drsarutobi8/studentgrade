@@ -1,4 +1,4 @@
-package grpc.client;
+package grpc.interceptor;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
