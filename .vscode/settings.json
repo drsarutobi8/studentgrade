@@ -1,5 +1,6 @@
 {
     "java.project.sourcePaths": [
+        "common/src/main/java",
         "resultApi/src/main/proto",
         "resultApi/build/classes/java/quarkus-generated-sources/grpc",
         "resultService/src/main/java",

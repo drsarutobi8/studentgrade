@@ -19,4 +19,4 @@ pluginManagement {
 }
 
 rootProject.name = "studentgrade"
-include("resultApi","resultService","studentApi","studentService")
+include("common","resultApi","resultService","studentApi","studentService")

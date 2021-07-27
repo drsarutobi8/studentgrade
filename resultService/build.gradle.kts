@@ -26,6 +26,7 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
+    implementation(project(":common"))
     implementation(project(":resultApi"))
     compileOnly("org.projectlombok:lombok:1.18.20")
 
@@ -34,12 +35,13 @@ dependencies {
     implementation("io.quarkus:quarkus-hibernate-orm-panache")
     implementation("io.quarkus:quarkus-jdbc-h2")
     implementation("io.quarkus:quarkus-resteasy")
-    implementation("io.quarkus:quarkus-resteasy-mutiny")
+    implementation("io.quarkus:quarkus-keycloak-authorization")
+    implementation("io.quarkus:quarkus-oidc")
+    implementation("io.rest-assured:rest-assured")
 
     runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")
 
     testImplementation("io.quarkus:quarkus-junit5")
-    testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.assertj:assertj-core")
 }

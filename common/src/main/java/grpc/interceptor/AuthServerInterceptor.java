@@ -41,65 +41,74 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
             final Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
-        log.info("calling service:" + call.getMethodDescriptor().getFullMethodName());
+        log.info("receiving call service:" + call.getMethodDescriptor().getFullMethodName());
         log.info("header received from client:");
         requestHeaders.keys().stream().map(key -> Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER))
                 .collect(Collectors.toMap(Metadata.Key::name, requestHeaders::get))
-                .forEach((key, value) -> log.info(key + "=" + value));
+                .forEach((key, value) -> log.info("   " + key + "=" + value));
         Status status = Status.UNAUTHENTICATED.withDescription("Authorization token is missing");
         if (requestHeaders.containsKey(Constants.AUTHORIZATION_METADATA_KEY)) {
-            String authKey = requestHeaders.get(Constants.AUTHORIZATION_METADATA_KEY).substring(Constants.BEARER_TYPE.length()).trim();
+            log.info("getting header bearer auth key");
+            String bearerAuthKey    = requestHeaders.get(Constants.AUTHORIZATION_METADATA_KEY);
+            log.info("preparing auth key");
+            String authKey = bearerAuthKey.substring(Constants.BEARER_TYPE.length()).trim();
             try {
                 AccessToken token = this.validateReceivedAuthorizationKey(authKey);
                 if (token!=null) {
-                    log.info(String.format("iss = %s%n", token.getIssuer()));
-                    log.info(String.format("sub = %s%n", token.getSubject()));
-                    log.info(String.format("typ = %s%n", token.getType()));
-                    if (token.getName()!=null) {
-                        log.info("name=".concat(token.getName()));
-                    }//if
-                    if (token.getPreferredUsername()!=null) {
-                        log.info("userName=".concat(token.getPreferredUsername()));
-                    }//if
-
-                    //authorization here
-                    boolean authorized = false;
-                    String methodRolesAllowedConfigKey = call.getMethodDescriptor().getFullMethodName().concat(".rolesAllowed");
-                    Optional<String> rolesAllowedOptional = ConfigProvider.getConfig().getOptionalValue(methodRolesAllowedConfigKey, String.class);
-                    if (rolesAllowedOptional.isPresent()) {
-                        Set<String> rolesAllowed = Arrays.asList(rolesAllowedOptional.get().split(",")).stream().collect(Collectors.toSet());
-
-                        Set<String> roles = new HashSet<String>();
-                        if (token.getRealmAccess()!=null && token.getRealmAccess().getRoles()!=null) {
-                            roles.addAll(token.getRealmAccess().getRoles());
-                        }//if
-                        Map<String,Access> mapAccess  = token.getResourceAccess();
-                        for (Map.Entry<String,Access> entry:mapAccess.entrySet()) {
-                            Access access   = entry.getValue();
-                            roles.addAll(access.getRoles());
-                        }//for
-                        log.info("roles=".concat(roles.toString()));
-
-                        for (String role:roles) {
-                            authorized = authorized || rolesAllowed.contains(role);
-                        }//for
-                        if (!authorized) {
-                            status  = Status.PERMISSION_DENIED.withDescription("Required roles=".concat(rolesAllowed.toString()));
-                        }//if
+                    if (token.isExpired()) {
+                        status = Status.DEADLINE_EXCEEDED.withDescription("token is already expired.");
                     }//if
                     else {
-                        log.warn("The rolesAllowed parameter ".concat(methodRolesAllowedConfigKey).concat(" is not defined."));
-                        authorized =true;
-                    }//else
-                    //SET CONTEXT HERE FROM VALIDATED TOKEN
-                    if (authorized) {
-                        Context ctx = Context.current()
-                                        .withValue(Constants.CLIENT_ID_CONTEXT_KEY, token.getSubject())
-                                        .withValue(Constants.ACCESS_TOKEN_CONTEXT_KEY, token);
+                        log.info(String.format("iss = %s%n", token.getIssuer()));
+                        log.info(String.format("sub = %s%n", token.getSubject()));
+                        log.info(String.format("typ = %s%n", token.getType()));
+                        if (token.getName()!=null) {
+                            log.info("name=".concat(token.getName()));
+                        }//if
+                        if (token.getPreferredUsername()!=null) {
+                            log.info("userName=".concat(token.getPreferredUsername()));
+                        }//if
 
-                        return Contexts.interceptCall(ctx, call, requestHeaders, next);   
-                    }//if
-                }//if         
+                        //authorization here
+                        boolean authorized = false;
+                        String methodRolesAllowedConfigKey = call.getMethodDescriptor().getFullMethodName().concat(".rolesAllowed");
+                        Optional<String> rolesAllowedOptional = ConfigProvider.getConfig().getOptionalValue(methodRolesAllowedConfigKey, String.class);
+                        if (rolesAllowedOptional.isPresent()) {
+                            Set<String> rolesAllowed = Arrays.asList(rolesAllowedOptional.get().split(",")).stream().collect(Collectors.toSet());
+
+                            Set<String> roles = new HashSet<String>();
+                            if (token.getRealmAccess()!=null && token.getRealmAccess().getRoles()!=null) {
+                                roles.addAll(token.getRealmAccess().getRoles());
+                            }//if
+                            Map<String,Access> mapAccess  = token.getResourceAccess();
+                            for (Map.Entry<String,Access> entry:mapAccess.entrySet()) {
+                                Access access   = entry.getValue();
+                                roles.addAll(access.getRoles());
+                            }//for
+                            log.info("roles=".concat(roles.toString()));
+
+                            for (String role:roles) {
+                                authorized = authorized || rolesAllowed.contains(role);
+                            }//for
+                            if (!authorized) {
+                                status  = Status.PERMISSION_DENIED.withDescription("Required roles=".concat(rolesAllowed.toString()));
+                            }//if
+                        }//if
+                        else {
+                            log.warn("The rolesAllowed parameter ".concat(methodRolesAllowedConfigKey).concat(" is not defined."));
+                            authorized =true;
+                        }//else
+                        //SET CONTEXT HERE FROM VALIDATED TOKEN
+                        if (authorized) {
+                            log.info("user ".concat(token.getPreferredUsername()).concat(" is authorized."));
+                            Context ctx = Context.current()
+                                            .withValue(Constants.CLIENT_ID_CONTEXT_KEY, token.getSubject())
+                                            .withValue(Constants.ACCESS_TOKEN_CONTEXT_KEY, token)
+                                            .withValue(Constants.AUTHORIZATION_CONTEXT_KEY, bearerAuthKey);
+                            return Contexts.interceptCall(ctx, call, requestHeaders, next);   
+                        }//if
+                    }//else
+                }//if    
             }//try
             catch (AuthServerInterceptorException e) {
                 status  = Status.UNAUTHENTICATED.withCause(e);
@@ -126,7 +135,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
      * @param authKey
      */
     private AccessToken validateReceivedAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {
-        log.info("authKey=".concat(authKey));
+        log.info("start validateReceivedAuthorizationKey authKey=".concat(authKey));
         String authURL = "http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo";
         JsonPath responseJson = given().auth().oauth2(authKey)
                                 .when().get(authURL)
