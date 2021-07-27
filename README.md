@@ -8,7 +8,7 @@ and
 [Securing Java gRPC services with JWT-based authentication](https://sultanov.dev/blog/securing-java-grpc-services-with-jwt-based-authentication/)
 
 
-Implementing Quarkus 2.0.2, MariaDB 10.6.3, Keycloak 14.0.0, and Gradle Kotlin 7.0.2
+Implementing Quarkus 2.0.3, MariaDB 10.6.3, Keycloak 14.0.0, and Gradle Kotlin 7.0.2
 
 Using Following Quarkus Technology
 * Quarkus Grpc Service and Client (Enabling TLS)
