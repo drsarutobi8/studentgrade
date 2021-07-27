@@ -55,14 +55,7 @@ curl -X POST \
   http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
 ```
 
-<*** REPLACE SECRET HERE ***> 
-
-```
-curl -X POST \
-  http://localhost:8180/auth/realms/studentgrade-real/protocol/openid-connect/token \
-  -H "Authorization: Bearer ${access_token}" \
-  --data "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" 
-```
+*** REPLACE 30337997-8519-4eb7-928d-1322fba687c5 with YOUR CLIENT SECRET ***
 
 
 # To Test
