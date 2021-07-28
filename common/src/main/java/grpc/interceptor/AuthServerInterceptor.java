@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Prioritized;
+import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.keycloak.TokenVerifier;
@@ -37,6 +38,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     static final Metadata.Key<String> CUSTOM_HEADER_KEY = Metadata.Key.of("custom_server_header_key",
             Metadata.ASCII_STRING_MARSHALLER);
+
+
+    // @Inject
+    // ManagedExecutor executor;
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
@@ -120,11 +125,11 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
 
         call.close(status, requestHeaders);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
-            // @Override
-            // public void sendHeaders(Metadata responseHeaders) {
-            // responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
-            // super.sendHeaders(responseHeaders);
-            // }
+            @Override
+            public void sendHeaders(Metadata responseHeaders) {
+            responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
+            super.sendHeaders(responseHeaders);
+            }
         }, requestHeaders);
 
     }

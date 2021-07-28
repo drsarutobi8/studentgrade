@@ -2,24 +2,20 @@ package grpc.service;
 
 import javax.inject.Inject;
 
-import com.students_information.stubs.result.MutinyResultServiceGrpc;
-import com.students_information.stubs.result.ResultRequest;
-import com.students_information.stubs.result.ResultResponse;
 import com.students_information.stubs.student.Gender;
 import com.students_information.stubs.student.Grade;
 import com.students_information.stubs.student.MutinyStudentServiceGrpc;
 import com.students_information.stubs.student.StudentRequest;
 import com.students_information.stubs.student.StudentResponse;
 
-import domain.Student;
-import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
+import lombok.extern.slf4j.Slf4j;
 import service.StudentService;
-import grpc.ref.Constants;
+import value.StudentInfo;
 
 @GrpcService
-//@RolesAllowed({"student","teacher"})
+@Slf4j
 public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentServiceImplBase {
 
     @Inject
@@ -31,42 +27,21 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     @Override
     public Uni<StudentResponse> getStudentInfo(StudentRequest request) {
         String studentId = request.getStudentId();// the student ID should be passed with the request message
-            /*
-                The getResults method will help us to fetch the results for the student from the result service.
-                this method will call the result service through its client and bring back the result as a list of strings
-             */
-            
-            //Uni<Student> studentUni = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
-            Uni<Student> studentUni = studentService.read(studentId);
- 
-            return fillResults(studentUni);
-    }
-
-    @GrpcClient("result")
-    MutinyResultServiceGrpc.MutinyResultServiceStub resultClient;
-
-    private Uni<StudentResponse> fillResults(Uni<Student> studentUni){
-        return studentUni
-                .onItem().transformToUni(
-                    student -> resultClient.getResultForStudent(prepareResultRequest(student))
-                                .onItem().transformToUni(
-                                    resultRes -> prepareStudentResponse(student, resultRes)));
-    }
-
-    private static ResultRequest prepareResultRequest(Student student) {
-        return ResultRequest.newBuilder().setStudentId(student.getStudentId()).build();
-    }
-
-    private static Uni<StudentResponse> prepareStudentResponse(Student student, ResultResponse resultResponse) {
-        return Uni.createFrom().item(
-            StudentResponse.newBuilder()
-            .setStudentId(student.getStudentId())
-            .setName(student.getName())
-            .setAge(student.getAge())
-            .setGender(Gender.valueOf(student.getGender()))
-            .setMaths(Grade.valueOf(resultResponse.getMaths().toString()))
-            .setArt(Grade.valueOf(resultResponse.getArt().toString()))
-            .setChemistry(Grade.valueOf(resultResponse.getChemistry().toString()))
-            .build());
+        log.info("start grpcService.getStudentInfo studentId=".concat(studentId));    
+        Uni<StudentInfo> studentInfoUni = studentService.getInfo(studentId);
+        Uni<StudentResponse> response = studentInfoUni
+                                            .onItem()
+                                            .transformToUni(info -> Uni.createFrom().item(
+                                                StudentResponse.newBuilder()
+                                                .setStudentId(info.getStudentId())
+                                                .setName(info.getName())
+                                                .setAge(info.getAge())
+                                                .setGender(Gender.valueOf(info.getGender()))
+                                                .setMaths(Grade.valueOf(info.getMaths()))
+                                                .setArt(Grade.valueOf(info.getArt()))
+                                                .setChemistry(Grade.valueOf(info.getChemistry()))
+                                                .build()
+                                            ));
+        return response;
     }
 }

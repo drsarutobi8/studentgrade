@@ -37,6 +37,7 @@ dependencies {
     implementation("io.quarkus:quarkus-resteasy")
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
+    implementation("io.quarkus:quarkus-security")
     implementation("io.rest-assured:rest-assured")
 
     runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")

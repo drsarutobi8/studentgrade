@@ -30,18 +30,8 @@ dependencies {
 
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-grpc")
-    implementation("io.quarkus:quarkus-hibernate-orm-panache")
-    //implementation("io.quarkus:quarkus-hibernate-orm")
-    implementation("io.quarkus:quarkus-jdbc-h2")
-    implementation("io.quarkus:quarkus-resteasy")
-    implementation("io.quarkus:quarkus-resteasy-mutiny")
-
-    runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")
 
     testImplementation("io.quarkus:quarkus-junit5")
-    testImplementation("io.rest-assured:rest-assured")
-    testImplementation("org.awaitility:awaitility")
-    testImplementation("org.assertj:assertj-core")
 }
 
 group = "org.acme"
