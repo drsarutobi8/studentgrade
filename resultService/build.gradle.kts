@@ -27,7 +27,8 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
     //COMMENT HERE FOR NOW SINCE THE CLIENT INTERCEPTOR IS NOT WORKING
-    implementation(project(":common"))
+    //implementation(project(":common"))
+    
     implementation(project(":resultApi"))
     compileOnly("org.projectlombok:lombok:1.18.20")
 

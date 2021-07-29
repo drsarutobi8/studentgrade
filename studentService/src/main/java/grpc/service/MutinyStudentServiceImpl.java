@@ -5,9 +5,16 @@ import javax.inject.Inject;
 import com.students_information.stubs.student.Gender;
 import com.students_information.stubs.student.Grade;
 import com.students_information.stubs.student.MutinyStudentServiceGrpc;
+import com.students_information.stubs.student.StudentCreateRequest;
+import com.students_information.stubs.student.StudentCreateResponse;
+import com.students_information.stubs.student.StudentDeleteRequest;
+import com.students_information.stubs.student.StudentDeleteResponse;
 import com.students_information.stubs.student.StudentInfoRequest;
 import com.students_information.stubs.student.StudentInfoResponse;
+import com.students_information.stubs.student.StudentReadRequest;
+import com.students_information.stubs.student.StudentReadResponse;
 
+import domain.Student;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
@@ -31,17 +38,82 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
         Uni<StudentInfo> studentInfoUni = studentService.getInfo(studentId);
         Uni<StudentInfoResponse> response = studentInfoUni
                                             .onItem()
-                                            .transformToUni(info -> Uni.createFrom().item(
-                                                StudentInfoResponse.newBuilder()
-                                                .setStudentId(info.getStudentId())
-                                                .setName(info.getName())
-                                                .setAge(info.getAge())
-                                                .setGender(Gender.valueOf(info.getGender()))
-                                                .setMaths(Grade.valueOf(info.getMaths()))
-                                                .setArt(Grade.valueOf(info.getArt()))
-                                                .setChemistry(Grade.valueOf(info.getChemistry()))
-                                                .build()
-                                            ));
+                                                .transformToUni(info -> Uni.createFrom().item(
+                                                    StudentInfoResponse.newBuilder()
+                                                    .setStudentId(info.getStudentId())
+                                                    .setName(info.getName())
+                                                    .setAge(info.getAge())
+                                                    .setGender((info.getGender()==null)?null:Gender.valueOf(info.getGender()))
+                                                    .setMaths((info.getMaths()==null)?null:Grade.valueOf(info.getMaths()))
+                                                    .setArt((info.getArt()==null)?null:Grade.valueOf(info.getArt()))
+                                                    .setChemistry((info.getChemistry()==null)?null:Grade.valueOf(info.getChemistry()))
+                                                    .build()
+                                                )
+                                            .onFailure()
+                                                .recoverWithItem(StudentInfoResponse.newBuilder().build()));
         return response;
     }
+
+    @Override
+    public Uni<StudentCreateResponse> create(StudentCreateRequest request) {
+        String studentId = request.getStudentId();// the student ID should be passed with the request message
+        log.info("start grpcService.create studentId=".concat(studentId));
+        Student newStudent = new Student();
+        newStudent.setAge(request.getAge());
+        newStudent.setGender(request.getGender().toString());
+        newStudent.setName(request.getName());
+        newStudent.setStudentId(request.getStudentId());
+        Uni<Student> studentUni = studentService.create(newStudent);   
+        Uni<StudentCreateResponse> response = studentUni
+                                            .onItem()
+                                                .transformToUni(student -> Uni.createFrom().item(
+                                                    StudentCreateResponse.newBuilder()
+                                                    .setStudentId(student.getStudentId())
+                                                    .build()
+                                                )
+                                            .onFailure()
+                                                .recoverWithItem(StudentCreateResponse.newBuilder().build()));
+        return response;
+    }
+
+    @Override
+    public Uni<StudentDeleteResponse> delete(StudentDeleteRequest request) {
+        String studentId = request.getStudentId();// the student ID should be passed with the request message
+        log.info("start grpcService.delete studentId=".concat(studentId));    
+        Uni<Long> deletedCountUni = studentService.delete(studentId);
+        Uni<StudentDeleteResponse> response = deletedCountUni
+                                                .onItem()
+                                                    .transformToUni(deletedCount -> Uni.createFrom().item(
+                                                        StudentDeleteResponse.newBuilder()
+                                                        .setDeletedCount(deletedCount)
+                                                        .build()
+                                                    )
+                                                .onFailure()
+                                                    .recoverWithItem(StudentDeleteResponse.newBuilder()
+                                                                                            .setDeletedCount(0l)
+                                                                                            .build()
+                                                    ));
+        return response;
+    }
+
+    @Override
+    public Uni<StudentReadResponse> read(StudentReadRequest request) {
+        String studentId = request.getStudentId();// the student ID should be passed with the request message
+        log.info("start grpcService.read studentId=".concat(studentId));    
+        Uni<Student> studentUni = studentService.read(studentId);
+        Uni<StudentReadResponse> response = studentUni
+                                            .onItem()
+                                                .transformToUni(student -> Uni.createFrom().item(
+                                                    StudentReadResponse.newBuilder()
+                                                    .setStudentId(student.getStudentId())
+                                                    .setName(student.getName())
+                                                    .setAge(student.getAge())
+                                                    .setGender(Gender.valueOf(student.getGender()))
+                                                    .build()
+                                                )
+                                            .onFailure()
+                                                .recoverWithItem(StudentReadResponse.newBuilder().build()));
+        return response;
+    }
+
 }

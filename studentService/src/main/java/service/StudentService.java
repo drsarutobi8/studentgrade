@@ -7,6 +7,7 @@ import dao.StudentDao;
 import domain.Student;
 import grpc.ref.Constants;
 import io.quarkus.grpc.GrpcClient;
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -21,10 +22,17 @@ public class StudentService {
     @Inject
     StudentDao studentDao;
 
-    public Uni<Student> read(String studentId) {
-        log.info("reading by studentId=".concat(studentId));
+    public Uni<Student> create(Student student) {
+        log.info("creating studentId=".concat(student.getStudentId()));
+        AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
+        if (token!=null) {
+            log.info("by userId=".concat(token.getPreferredUsername()));
+        }//if
+        return Panache.withTransaction(() -> studentDao.persist(student));
+    }
 
-        log.info("Calling GRPC ACCESS_TOKEN_CONTEXT_KEY");
+    public Uni<Student> read(String studentId) {
+        log.info("reading studentId=".concat(studentId));
         AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
         if (token!=null) {
             log.info("by userId=".concat(token.getPreferredUsername()));
@@ -33,17 +41,35 @@ public class StudentService {
         return studentUni;
     }
 
+    public Uni<Long> delete(String studentId) {
+        log.info("deleting studentId=".concat(studentId));
+        AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
+        if (token!=null) {
+            log.info("by userId=".concat(token.getPreferredUsername()));
+        }//if
+        return Panache.withTransaction(() -> studentDao.deleteByStudentId(studentId));
+    }
+
     @GrpcClient("result")
     MutinyResultServiceGrpc.MutinyResultServiceStub resultClient;
 
     public Uni<StudentInfo> getInfo(String studentId) {
+        log.info("getting info studentId=".concat(studentId));
         Uni<Student> studentUni = read(studentId);
         Uni<StudentInfo> studentInfoUni = studentUni
                                             .onItem()
                                             .transformToUni(student -> 
                                                 resultClient.getResultForStudent(prepareResultRequest(student))
                                                 .onItem()
-                                                .transformToUni(resultRes -> prepareStudentInfo(student, resultRes)));
+                                                    .transformToUni(resultRes -> prepareStudentInfo(student, resultRes))
+                                                .onFailure()
+                                                    .recoverWithItem(StudentInfo.builder()
+                                                        .age(student.getAge())
+                                                        .gender(student.getGender())
+                                                        .name(student.getName())
+                                                        .studentId(student.getStudentId())
+                                                        .build())
+                                            );
         return studentInfoUni;
     }
 

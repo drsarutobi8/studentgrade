@@ -35,19 +35,21 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
 
         try {
             Result result = resultDao.findByStudentId(studentId); // Use the dao class to retrieve data
-
+            
             /*
                 In gRPC everything we create according to the builder pattern,
                 here we have to generate the response message,
                 in order to create that response message we use the response builder
                 and then set the values for that,
             */
-            ResultResponse resultResponse = ResultResponse.newBuilder()
-                    .setStudentId(studentId)
-                    .setMaths(Grade.valueOf(result.getMaths()))
+            ResultResponse.Builder builder = ResultResponse.newBuilder()
+                                                .setStudentId(studentId);
+            if (result!=null) {
+                builder.setMaths(Grade.valueOf(result.getMaths()))
                     .setArt(Grade.valueOf(result.getArt()))
-                    .setChemistry(Grade.valueOf(result.getChemistry()))
-                    .build();
+                    .setChemistry(Grade.valueOf(result.getChemistry()));
+            }//if
+            ResultResponse resultResponse = builder.build();
 
             /*
                 gRPC works in an asynchronous manner, so if you have ever worked with asynchronous programming

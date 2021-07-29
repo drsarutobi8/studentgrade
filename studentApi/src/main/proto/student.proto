@@ -23,6 +23,42 @@ message StudentInfoResponse{
   Grade chemistry = 7;
 }
 
+// This is the request message
+message StudentCreateRequest{
+  string student_id = 1;
+  string name = 2;
+  int32 age = 3;
+  Gender gender = 4;
+}
+
+// This is the response message
+message StudentCreateResponse{
+  string student_id = 1;
+}
+
+// This is the request message
+message StudentReadRequest{
+  string student_id = 1;
+}
+
+// This is the response message
+message StudentReadResponse{
+  string student_id = 1;
+  string name = 2;
+  int32 age = 3;
+  Gender gender = 4;
+}
+
+// This is the request message
+message StudentDeleteRequest{
+  string student_id = 1;
+}
+
+// This is the response message
+message StudentDeleteResponse{
+  int64 deletedCount = 1;
+}
+
 // Students grades are given either as PASS or FAIL.
 enum Grade{
   PASS = 0;
@@ -38,4 +74,9 @@ enum Gender{
 // Now let's define our service
 service StudentService{
   rpc getStudentInfo(StudentInfoRequest) returns (StudentInfoResponse);
+
+  rpc create(StudentCreateRequest) returns (StudentCreateResponse);
+  rpc read(StudentReadRequest) returns (StudentReadResponse);
+  rpc delete(StudentDeleteRequest) returns (StudentDeleteResponse);
+
 }
