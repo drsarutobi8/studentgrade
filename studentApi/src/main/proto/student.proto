@@ -8,12 +8,12 @@ package com.students_information.stubs.student;
 option java_multiple_files = true;
 
 // This is the request message
-message StudentRequest{
+message StudentInfoRequest{
   string student_id = 1;
 }
 
 // This is the response message
-message StudentResponse{
+message StudentInfoResponse{
   string student_id = 1;
   string name = 2;
   int32 age = 3;
@@ -37,5 +37,5 @@ enum Gender{
 
 // Now let's define our service
 service StudentService{
-  rpc getStudentInfo(StudentRequest) returns (StudentResponse);
+  rpc getStudentInfo(StudentInfoRequest) returns (StudentInfoResponse);
 }

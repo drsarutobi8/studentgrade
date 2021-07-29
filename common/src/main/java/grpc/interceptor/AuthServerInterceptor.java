@@ -5,9 +5,11 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
@@ -31,6 +34,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.restassured.path.json.JsonPath;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -39,15 +43,36 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     static final Metadata.Key<String> CUSTOM_HEADER_KEY = Metadata.Key.of("custom_server_header_key",
             Metadata.ASCII_STRING_MARSHALLER);
 
+    @Inject 
+    ManagedExecutor managedExecutor;
 
-    // @Inject
-    // ManagedExecutor executor;
+    private static boolean initContextPropagation = false;
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
             final Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
         log.info("receiving call service:" + call.getMethodDescriptor().getFullMethodName());
         log.info("header received from client:");
+
+        if (!initContextPropagation) {
+            log.info("init auto context propagation");
+            // https://quarkusio.zulipchat.com/#narrow/stream/187030-users/topic/Passing.20gRPC.20context.20around/near/220134523
+            // https://github.com/quarkusio/quarkus/issues/13959
+            // https://stackoverflow.com/questions/47231289/how-to-pass-on-a-traceid-from-grpcs-context-to-another-thread-threadpool/47232025#47232025
+            //managedExecutor = (ManagedExecutor) Context.currentContextExecutor(managedExecutor);
+            
+            
+            //Executor currentExecutor = Infrastructure.getDefaultExecutor();
+            Executor newExecutor = Context.currentContextExecutor(managedExecutor);
+            Infrastructure.setDefaultExecutor(newExecutor);
+            
+            // executor now auto-propagates
+            
+            
+            
+            initContextPropagation=true;
+        }//if
+ 
         requestHeaders.keys().stream().map(key -> Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER))
                 .collect(Collectors.toMap(Metadata.Key::name, requestHeaders::get))
                 .forEach((key, value) -> log.info("   " + key + "=" + value));
@@ -64,6 +89,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                         status = Status.DEADLINE_EXCEEDED.withDescription("token is already expired.");
                     }//if
                     else {
+                        //AUTHENTICATED
                         log.info(String.format("iss = %s%n", token.getIssuer()));
                         log.info(String.format("sub = %s%n", token.getSubject()));
                         log.info(String.format("typ = %s%n", token.getType()));
@@ -92,9 +118,10 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                             }//for
                             log.info("roles=".concat(roles.toString()));
 
-                            for (String role:roles) {
-                                authorized = authorized || rolesAllowed.contains(role);
+                            for (Iterator<String> rolesIter = roles.iterator();(!authorized)&&rolesIter.hasNext();) {
+                                authorized = authorized || rolesAllowed.contains(rolesIter.next());
                             }//for
+
                             if (!authorized) {
                                 status  = Status.PERMISSION_DENIED.withDescription("Required roles=".concat(rolesAllowed.toString()));
                             }//if
@@ -109,7 +136,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                             Context ctx = Context.current()
                                             .withValue(Constants.CLIENT_ID_CONTEXT_KEY, token.getSubject())
                                             .withValue(Constants.ACCESS_TOKEN_CONTEXT_KEY, token)
-                                            .withValue(Constants.AUTHORIZATION_CONTEXT_KEY, bearerAuthKey);
+                                            .withValue(Constants.BEARER_AUTHORIZATION_CONTEXT_KEY, bearerAuthKey);
                             return Contexts.interceptCall(ctx, call, requestHeaders, next);   
                         }//if
                     }//else
@@ -141,12 +168,15 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
      */
     private AccessToken validateReceivedAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {
         log.info("start validateReceivedAuthorizationKey authKey=".concat(authKey));
-        String authURL = "http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo";
+        String serverUrl = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.auth-server-url", String.class).orElse("http://localhost:8180/auth/realms/studentgrade-realm");
+        String userInfoPath = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.user-info-path", String.class).orElse("/protocol/openid-connect/userinfo");
+
+        String authURL = serverUrl.concat(userInfoPath);
         JsonPath responseJson = given().auth().oauth2(authKey)
                                 .when().get(authURL)
                                 .then()
                                     .statusCode(OK.getStatusCode())
-                                    .extract().response().jsonPath();
+                                        .extract().response().jsonPath();
         String resp_preferredUserName = responseJson.getString("preferred_username");
         if (resp_preferredUserName==null) {
             throw new AuthServerInterceptorException("Response preferredUserName is null");
