@@ -1,18 +1,21 @@
 package service;
 
+import java.util.NoSuchElementException;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import com.students_information.stubs.result.MutinyResultServiceGrpc;
-import com.students_information.stubs.result.ResultRequest;
-import com.students_information.stubs.result.ResultResponse;
+import com.students_information.stubs.result.ResultReadRequest;
+import com.students_information.stubs.result.ResultReadResponse;
+
 import dao.StudentDao;
 import domain.Student;
-import grpc.ref.Constants;
+import grpc.interceptor.BearerAuthHolder;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.representations.AccessToken;
 import value.StudentInfo;
 
 @ApplicationScoped
@@ -22,32 +25,57 @@ public class StudentService {
     @Inject
     StudentDao studentDao;
 
+    @Inject
+    BearerAuthHolder authHolder;
+
     public Uni<Student> create(Student student) {
         log.info("creating studentId=".concat(student.getStudentId()));
-        AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
-        if (token!=null) {
-            log.info("by userId=".concat(token.getPreferredUsername()));
+
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
         }//if
         return Panache.withTransaction(() -> studentDao.persist(student));
     }
 
     public Uni<Student> read(String studentId) {
         log.info("reading studentId=".concat(studentId));
-        AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
-        if (token!=null) {
-            log.info("by userId=".concat(token.getPreferredUsername()));
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
         }//if
         Uni<Student> studentUni = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
         return studentUni;
     }
 
+    public Uni<Student> update(Student student) {
+        log.info("updating studentId=".concat(student.getStudentId()));
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+        }//if
+
+        return Panache.withTransaction(() -> studentDao.findByStudentId(student.getStudentId())
+                                            .onItem()
+                                                .ifNotNull()
+                                                    .invoke(st -> {
+                                                            st.setAge(student.getAge());
+                                                            st.setGender(student.getGender());
+                                                            st.setName(student.getName());
+                                                        })
+                                        )
+                                        .onItem()
+                                            .ifNull()
+                                                .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(student.getStudentId())));
+    }
+
     public Uni<Long> delete(String studentId) {
         log.info("deleting studentId=".concat(studentId));
-        AccessToken token = Constants.ACCESS_TOKEN_CONTEXT_KEY.get();
-        if (token!=null) {
-            log.info("by userId=".concat(token.getPreferredUsername()));
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
         }//if
-        return Panache.withTransaction(() -> studentDao.deleteByStudentId(studentId));
+
+        return Panache.withTransaction(() -> studentDao.deleteByStudentId(studentId))
+                .onItem()
+                    .ifNull()
+                        .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(studentId)));
     }
 
     @GrpcClient("result")
@@ -55,11 +83,14 @@ public class StudentService {
 
     public Uni<StudentInfo> getInfo(String studentId) {
         log.info("getting info studentId=".concat(studentId));
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+        }//if
         Uni<Student> studentUni = read(studentId);
         Uni<StudentInfo> studentInfoUni = studentUni
                                             .onItem()
                                             .transformToUni(student -> 
-                                                resultClient.getResultForStudent(prepareResultRequest(student))
+                                                resultClient.read(prepareResultRequest(student))
                                                 .onItem()
                                                     .transformToUni(resultRes -> prepareStudentInfo(student, resultRes))
                                                 .onFailure()
@@ -73,11 +104,11 @@ public class StudentService {
         return studentInfoUni;
     }
 
-    private static ResultRequest prepareResultRequest(Student student) {
-        return ResultRequest.newBuilder().setStudentId(student.getStudentId()).build();
+    private static ResultReadRequest prepareResultRequest(Student student) {
+        return ResultReadRequest.newBuilder().setStudentId(student.getStudentId()).build();
     }
 
-    private static Uni<StudentInfo> prepareStudentInfo(Student student, ResultResponse resultResponse) {
+    private static Uni<StudentInfo> prepareStudentInfo(Student student, ResultReadResponse resultResponse) {
         return Uni.createFrom().item(
             StudentInfo.builder()
             .studentId(student.getStudentId())

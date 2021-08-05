@@ -13,6 +13,8 @@ import com.students_information.stubs.student.StudentInfoRequest;
 import com.students_information.stubs.student.StudentInfoResponse;
 import com.students_information.stubs.student.StudentReadRequest;
 import com.students_information.stubs.student.StudentReadResponse;
+import com.students_information.stubs.student.StudentUpdateRequest;
+import com.students_information.stubs.student.StudentUpdateResponse;
 
 import domain.Student;
 import io.quarkus.grpc.GrpcService;
@@ -44,9 +46,9 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
                                                     .setName(info.getName())
                                                     .setAge(info.getAge())
                                                     .setGender((info.getGender()==null)?null:Gender.valueOf(info.getGender()))
-                                                    .setMaths((info.getMaths()==null)?null:Grade.valueOf(info.getMaths()))
-                                                    .setArt((info.getArt()==null)?null:Grade.valueOf(info.getArt()))
-                                                    .setChemistry((info.getChemistry()==null)?null:Grade.valueOf(info.getChemistry()))
+                                                    .setMaths((info.getMaths()==null)?Grade.UNKNOWN:Grade.valueOf(info.getMaths()))
+                                                    .setArt((info.getArt()==null)?Grade.UNKNOWN:Grade.valueOf(info.getArt()))
+                                                    .setChemistry((info.getChemistry()==null)?Grade.UNKNOWN:Grade.valueOf(info.getChemistry()))
                                                     .build()
                                                 )
                                             .onFailure()
@@ -56,7 +58,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
 
     @Override
     public Uni<StudentCreateResponse> create(StudentCreateRequest request) {
-        String studentId = request.getStudentId();// the student ID should be passed with the request message
+        String studentId = request.getStudentId();
         log.info("start grpcService.create studentId=".concat(studentId));
         Student newStudent = new Student();
         newStudent.setAge(request.getAge());
@@ -77,28 +79,8 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     }
 
     @Override
-    public Uni<StudentDeleteResponse> delete(StudentDeleteRequest request) {
-        String studentId = request.getStudentId();// the student ID should be passed with the request message
-        log.info("start grpcService.delete studentId=".concat(studentId));    
-        Uni<Long> deletedCountUni = studentService.delete(studentId);
-        Uni<StudentDeleteResponse> response = deletedCountUni
-                                                .onItem()
-                                                    .transformToUni(deletedCount -> Uni.createFrom().item(
-                                                        StudentDeleteResponse.newBuilder()
-                                                        .setDeletedCount(deletedCount)
-                                                        .build()
-                                                    )
-                                                .onFailure()
-                                                    .recoverWithItem(StudentDeleteResponse.newBuilder()
-                                                                                            .setDeletedCount(0l)
-                                                                                            .build()
-                                                    ));
-        return response;
-    }
-
-    @Override
     public Uni<StudentReadResponse> read(StudentReadRequest request) {
-        String studentId = request.getStudentId();// the student ID should be passed with the request message
+        String studentId = request.getStudentId();
         log.info("start grpcService.read studentId=".concat(studentId));    
         Uni<Student> studentUni = studentService.read(studentId);
         Uni<StudentReadResponse> response = studentUni
@@ -113,6 +95,48 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
                                                 )
                                             .onFailure()
                                                 .recoverWithItem(StudentReadResponse.newBuilder().build()));
+        return response;
+    }
+
+    @Override
+    public Uni<StudentUpdateResponse> update(StudentUpdateRequest request) {
+        String studentId = request.getStudentId();
+        log.info("start grpcService.update studentId=".concat(studentId));
+        Student updatingStudent = new Student();
+        updatingStudent.setAge(request.getAge());
+        updatingStudent.setGender(request.getGender().toString());
+        updatingStudent.setName(request.getName());
+        updatingStudent.setStudentId(request.getStudentId());
+        Uni<Student> studentUni = studentService.update(updatingStudent);   
+        Uni<StudentUpdateResponse> response = studentUni
+                                            .onItem()
+                                                .transformToUni(student -> Uni.createFrom().item(
+                                                    StudentUpdateResponse.newBuilder()
+                                                    .setStudentId(student.getStudentId())
+                                                    .build()
+                                                )
+                                            .onFailure()
+                                                .recoverWithItem(StudentUpdateResponse.newBuilder().build()));
+        return response;
+    }
+
+    @Override
+    public Uni<StudentDeleteResponse> delete(StudentDeleteRequest request) {
+        String studentId = request.getStudentId();
+        log.info("start grpcService.delete studentId=".concat(studentId));    
+        Uni<Long> deletedCountUni = studentService.delete(studentId);
+        Uni<StudentDeleteResponse> response = deletedCountUni
+                                                .onItem()
+                                                    .transformToUni(deletedCount -> Uni.createFrom().item(
+                                                        StudentDeleteResponse.newBuilder()
+                                                        .setDeletedCount(deletedCount)
+                                                        .build()
+                                                    )
+                                                .onFailure()
+                                                    .recoverWithItem(StudentDeleteResponse.newBuilder()
+                                                                                            .setDeletedCount(0l)
+                                                                                            .build()
+                                                    ));
         return response;
     }
 

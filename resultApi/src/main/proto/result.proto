@@ -7,26 +7,55 @@ package com.students_information.stubs.result;
 // With this line, I am saying that create multiple classes rather than a single class
 option java_multiple_files = true;
 
-// This is the request message
-message ResultRequest{
+// Students grades are given either as PASS or FAIL.
+enum Grade{
+  PASS = 0;
+  FAIL = 1;
+  UNKNOWN=2;
+}
+
+message ResultCreateRequest{
+  string student_id = 1;
+  Grade maths = 2;
+  Grade art = 3;
+  Grade chemistry = 4;
+}
+message ResultCreateResponse{
   string student_id = 1;
 }
 
-// This is the response message
-message ResultResponse{
+message ResultReadRequest{
+  string student_id = 1;
+}
+message ResultReadResponse{
   string student_id = 1;
   Grade maths = 2;
   Grade art = 3;
   Grade chemistry = 4;
 }
 
-// Students grades are given either as PASS or FAIL.
-enum Grade{
-  PASS = 0;
-  FAIL = 1;
+message ResultUpdateRequest{
+  string student_id = 1;
+  Grade maths = 2;
+  Grade art = 3;
+  Grade chemistry = 4;
+}
+message ResultUpdateResponse{
+  string student_id = 1;
+}
+
+message ResultDeleteRequest{
+  string student_id = 1;
+}
+message ResultDeleteResponse{
+  int64 deletedCount = 1;
 }
 
 // Now let's define our service
 service ResultService{
-  rpc getResultForStudent(ResultRequest) returns (ResultResponse);
+  rpc create(ResultCreateRequest) returns (ResultCreateResponse);
+  rpc read(ResultReadRequest) returns (ResultReadResponse);
+  rpc update(ResultUpdateRequest) returns (ResultUpdateResponse);
+  rpc delete(ResultDeleteRequest) returns (ResultDeleteResponse);
+
 }

@@ -23,25 +23,19 @@ message StudentInfoResponse{
   Grade chemistry = 7;
 }
 
-// This is the request message
 message StudentCreateRequest{
   string student_id = 1;
   string name = 2;
   int32 age = 3;
   Gender gender = 4;
 }
-
-// This is the response message
 message StudentCreateResponse{
   string student_id = 1;
 }
 
-// This is the request message
 message StudentReadRequest{
   string student_id = 1;
 }
-
-// This is the response message
 message StudentReadResponse{
   string student_id = 1;
   string name = 2;
@@ -49,12 +43,19 @@ message StudentReadResponse{
   Gender gender = 4;
 }
 
-// This is the request message
-message StudentDeleteRequest{
+message StudentUpdateRequest{
+  string student_id = 1;
+  string name = 2;
+  int32 age = 3;
+  Gender gender = 4;
+}
+message StudentUpdateResponse{
   string student_id = 1;
 }
 
-// This is the response message
+message StudentDeleteRequest{
+  string student_id = 1;
+}
 message StudentDeleteResponse{
   int64 deletedCount = 1;
 }
@@ -63,6 +64,7 @@ message StudentDeleteResponse{
 enum Grade{
   PASS = 0;
   FAIL = 1;
+  UNKNOWN=2;
 }
 
 // Students genders are given either as MALE or FEMALE.
@@ -77,6 +79,7 @@ service StudentService{
 
   rpc create(StudentCreateRequest) returns (StudentCreateResponse);
   rpc read(StudentReadRequest) returns (StudentReadResponse);
+  rpc update(StudentUpdateRequest) returns (StudentUpdateResponse);
   rpc delete(StudentDeleteRequest) returns (StudentDeleteResponse);
 
 }

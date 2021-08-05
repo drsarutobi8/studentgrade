@@ -18,7 +18,6 @@ import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.context.ManagedExecutor;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
@@ -34,7 +33,6 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.restassured.path.json.JsonPath;
-import io.smallrye.mutiny.infrastructure.Infrastructure;
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
@@ -42,36 +40,14 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     static final Metadata.Key<String> CUSTOM_HEADER_KEY = Metadata.Key.of("custom_server_header_key",
             Metadata.ASCII_STRING_MARSHALLER);
-
-    @Inject 
-    ManagedExecutor managedExecutor;
-
-    private static boolean initContextPropagation = false;
+    @Inject
+    BearerAuthHolder authHolder;
 
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
             final Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
         log.info("receiving call service:" + call.getMethodDescriptor().getFullMethodName());
         log.info("header received from client:");
-
-        if (!initContextPropagation) {
-            log.info("init auto context propagation");
-            // https://quarkusio.zulipchat.com/#narrow/stream/187030-users/topic/Passing.20gRPC.20context.20around/near/220134523
-            // https://github.com/quarkusio/quarkus/issues/13959
-            // https://stackoverflow.com/questions/47231289/how-to-pass-on-a-traceid-from-grpcs-context-to-another-thread-threadpool/47232025#47232025
-            //managedExecutor = (ManagedExecutor) Context.currentContextExecutor(managedExecutor);
-            
-            
-            //Executor currentExecutor = Infrastructure.getDefaultExecutor();
-            Executor newExecutor = Context.currentContextExecutor(managedExecutor);
-            Infrastructure.setDefaultExecutor(newExecutor);
-            
-            // executor now auto-propagates
-            
-            
-            
-            initContextPropagation=true;
-        }//if
  
         requestHeaders.keys().stream().map(key -> Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER))
                 .collect(Collectors.toMap(Metadata.Key::name, requestHeaders::get))
@@ -83,45 +59,24 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             log.info("preparing auth key");
             String authKey = bearerAuthKey.substring(Constants.BEARER_TYPE.length()).trim();
             try {
-                AccessToken token = this.validateReceivedAuthorizationKey(authKey);
-                if (token!=null) {
-                    if (token.isExpired()) {
+                AccessToken accessToken = this.validateReceivedAuthorizationKey(authKey);
+                if (accessToken!=null) {
+                    if (accessToken.isExpired()) {
                         status = Status.DEADLINE_EXCEEDED.withDescription("token is already expired.");
                     }//if
                     else {
                         //AUTHENTICATED
-                        log.info(String.format("iss = %s%n", token.getIssuer()));
-                        log.info(String.format("sub = %s%n", token.getSubject()));
-                        log.info(String.format("typ = %s%n", token.getType()));
-                        if (token.getName()!=null) {
-                            log.info("name=".concat(token.getName()));
-                        }//if
-                        if (token.getPreferredUsername()!=null) {
-                            log.info("userName=".concat(token.getPreferredUsername()));
-                        }//if
+                        BearerAuthHolder _holder= new BearerAuthHolder();
+                        _holder.setAccessToken(accessToken);
+                        _holder.setBearerAuthKey(bearerAuthKey);
 
-                        //authorization here
+                        // check authorization here
                         boolean authorized = false;
                         String methodRolesAllowedConfigKey = call.getMethodDescriptor().getFullMethodName().concat(".rolesAllowed");
                         Optional<String> rolesAllowedOptional = ConfigProvider.getConfig().getOptionalValue(methodRolesAllowedConfigKey, String.class);
                         if (rolesAllowedOptional.isPresent()) {
                             Set<String> rolesAllowed = Arrays.asList(rolesAllowedOptional.get().split(",")).stream().collect(Collectors.toSet());
-
-                            Set<String> roles = new HashSet<String>();
-                            if (token.getRealmAccess()!=null && token.getRealmAccess().getRoles()!=null) {
-                                roles.addAll(token.getRealmAccess().getRoles());
-                            }//if
-                            Map<String,Access> mapAccess  = token.getResourceAccess();
-                            for (Map.Entry<String,Access> entry:mapAccess.entrySet()) {
-                                Access access   = entry.getValue();
-                                roles.addAll(access.getRoles());
-                            }//for
-                            log.info("roles=".concat(roles.toString()));
-
-                            for (Iterator<String> rolesIter = roles.iterator();(!authorized)&&rolesIter.hasNext();) {
-                                authorized = authorized || rolesAllowed.contains(rolesIter.next());
-                            }//for
-
+                            authorized = _holder.isRolesAllowed(rolesAllowed);
                             if (!authorized) {
                                 status  = Status.PERMISSION_DENIED.withDescription("Required roles=".concat(rolesAllowed.toString()));
                             }//if
@@ -130,17 +85,14 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                             log.warn("The rolesAllowed parameter ".concat(methodRolesAllowedConfigKey).concat(" is not defined."));
                             authorized =true;
                         }//else
-                        //SET CONTEXT HERE FROM VALIDATED TOKEN
                         if (authorized) {
-                            log.info("user ".concat(token.getPreferredUsername()).concat(" is authorized."));
-                            Context ctx = Context.current()
-                                            .withValue(Constants.CLIENT_ID_CONTEXT_KEY, token.getSubject())
-                                            .withValue(Constants.ACCESS_TOKEN_CONTEXT_KEY, token)
-                                            .withValue(Constants.BEARER_AUTHORIZATION_CONTEXT_KEY, bearerAuthKey);
-                            return Contexts.interceptCall(ctx, call, requestHeaders, next);   
+                            //SET REQUEST SCOPED AUTH HOLDER
+                            authHolder.copy(_holder);
+                            log.info("User ".concat(authHolder.getAccessToken().getPreferredUsername().concat(" is authorized.")));
+                            return Contexts.interceptCall(Context.current(), call, requestHeaders, next);   
                         }//if
                     }//else
-                }//if    
+                }//if
             }//try
             catch (AuthServerInterceptorException e) {
                 status  = Status.UNAUTHENTICATED.withCause(e);

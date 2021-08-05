@@ -6,8 +6,8 @@ import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
-import com.students_information.stubs.result.ResultRequest;
-import com.students_information.stubs.result.ResultResponse;
+import com.students_information.stubs.result.ResultReadRequest;
+import com.students_information.stubs.result.ResultReadResponse;
 import com.students_information.stubs.result.ResultServiceGrpc;
 import com.students_information.stubs.student.Gender;
 import com.students_information.stubs.student.Grade;
@@ -81,9 +81,9 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
     public List<String> getResults(String studentId){
         // Creating the request object
-        ResultRequest resultRequest = ResultRequest.newBuilder().setStudentId(studentId).build();
+        ResultReadRequest resultRequest = ResultReadRequest.newBuilder().setStudentId(studentId).build();
         // Getting the response back
-        ResultResponse resultResponse = resultClient.getResultForStudent(resultRequest);
+        ResultReadResponse resultResponse = resultClient.read(resultRequest);
         
         // Send it to the caller, in an appropriate manner in this case as a list.
         List<String> resultGrades = new ArrayList<>();

@@ -13,14 +13,15 @@ import io.grpc.MethodDescriptor;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.Prioritized;
+import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
 @Slf4j
 public class AuthClientInterceptor implements ClientInterceptor, Prioritized {
-    static final Metadata.Key<String> CUSTOM_HEADER_KEY = Metadata.Key.of("custom_client_header_key", Metadata.ASCII_STRING_MARSHALLER);
-    private volatile long callTime;
+    @Inject
+    BearerAuthHolder authHolder;
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
@@ -32,17 +33,14 @@ public class AuthClientInterceptor implements ClientInterceptor, Prioritized {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
                 /* put custom header */
-                headers.put(CUSTOM_HEADER_KEY, "customRequestValue");
-                String bearerAuthKey = Constants.BEARER_AUTHORIZATION_CONTEXT_KEY.get();
-                if (bearerAuthKey!=null && bearerAuthKey.trim().length()>0) {
-                    headers.put(Constants.AUTHORIZATION_METADATA_KEY, bearerAuthKey);
+                if (authHolder!=null && authHolder.getBearerAuthKey()!=null &&  authHolder.getBearerAuthKey().trim().length()>0) {
+                    log.info("client is forwarding BearerAuthKey");
+                    headers.put(Constants.AUTHORIZATION_METADATA_KEY, authHolder.getBearerAuthKey());
                 }//if
                 super.start(
                         new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(responseListener) {
                             @Override
                             protected Listener<RespT> delegate() {
-                                callTime = System.nanoTime();
-
                                 log.info("headers sending from client:");
                                 headers.keys().stream().map(key -> Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER))
                                         .collect(Collectors.toMap(Metadata.Key::name, headers::get))
@@ -54,10 +52,6 @@ public class AuthClientInterceptor implements ClientInterceptor, Prioritized {
                         }, headers);
             }
         };
-    }
-
-    public long getLastCall() {
-        return callTime;
     }
 
     @Override
