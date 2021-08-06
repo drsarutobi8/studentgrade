@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.students_information.stubs.result.Grade;
 import com.students_information.stubs.result.MutinyResultServiceGrpc;
 import com.students_information.stubs.result.ResultReadRequest;
 import com.students_information.stubs.result.ResultReadResponse;
@@ -89,18 +90,25 @@ public class StudentService {
         Uni<Student> studentUni = read(studentId);
         Uni<StudentInfo> studentInfoUni = studentUni
                                             .onItem()
-                                            .transformToUni(student -> 
-                                                resultClient.read(prepareResultRequest(student))
-                                                .onItem()
-                                                    .transformToUni(resultRes -> prepareStudentInfo(student, resultRes))
-                                                .onFailure()
-                                                    .recoverWithItem(StudentInfo.builder()
-                                                        .age(student.getAge())
-                                                        .gender(student.getGender())
-                                                        .name(student.getName())
-                                                        .studentId(student.getStudentId())
-                                                        .build())
-                                            );
+                                                .ifNull()
+                                                    .failWith(new UnknownStudentServiceException(studentId))
+                                            .onItem()
+                                                .ifNotNull()
+                                                    .transformToUni(student -> 
+                                                        resultClient.read(prepareResultRequest(student))
+                                                            .onItem()
+                                                                .transformToUni(resultRes -> prepareStudentInfo(student, resultRes))
+                                                            .onFailure()
+                                                                .recoverWithItem(StudentInfo.builder()
+                                                                    .age(student.getAge())
+                                                                    .gender(student.getGender())
+                                                                    .name(student.getName())
+                                                                    .studentId(student.getStudentId())
+                                                                    .art(Grade.UNKNOWN.name())
+                                                                    .maths(Grade.UNKNOWN.name())
+                                                                    .chemistry(Grade.UNKNOWN.name())
+                                                                    .build())
+                                                    );
         return studentInfoUni;
     }
 

@@ -32,6 +32,7 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+import io.restassured.response.Response;
 import io.restassured.path.json.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,13 +96,17 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                 }//if
             }//try
             catch (AuthServerInterceptorException e) {
+                log.warn("Unauthenticated User", e);
                 status  = Status.UNAUTHENTICATED.withCause(e);
             }//catch
             catch (VerificationException e) {
+                log.warn("Cannot Verify User", e);
                 status  = Status.UNAUTHENTICATED.withCause(e);
             }//catch
-        } // else
-
+        } //if
+        else {
+            log.warn("Cannot find Bearer Authorization in headers");
+        }//else
         call.close(status, requestHeaders);
         return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
             @Override
@@ -124,11 +129,15 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         String userInfoPath = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.user-info-path", String.class).orElse("/protocol/openid-connect/userinfo");
 
         String authURL = serverUrl.concat(userInfoPath);
-        JsonPath responseJson = given().auth().oauth2(authKey)
+        Response response = given().auth().oauth2(authKey)
                                 .when().get(authURL)
                                 .then()
-                                    .statusCode(OK.getStatusCode())
-                                        .extract().response().jsonPath();
+                                    .extract().response();
+        int statusCode = response.getStatusCode();
+        if (statusCode!=OK.getStatusCode()) {
+            throw new AuthServerInterceptorException("Unauthenticated Status Code:".concat(String.valueOf(statusCode)));
+        }//if
+        JsonPath responseJson = response.jsonPath();
         String resp_preferredUserName = responseJson.getString("preferred_username");
         if (resp_preferredUserName==null) {
             throw new AuthServerInterceptorException("Response preferredUserName is null");

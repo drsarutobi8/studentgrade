@@ -21,6 +21,7 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 import service.StudentService;
+import service.UnknownStudentServiceException;
 import value.StudentInfo;
 
 @GrpcService
