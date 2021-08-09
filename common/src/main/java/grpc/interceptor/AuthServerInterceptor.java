@@ -60,13 +60,14 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             log.info("preparing auth key");
             String authKey = bearerAuthKey.substring(Constants.BEARER_TYPE.length()).trim();
             try {
-                AccessToken accessToken = this.validateReceivedAuthorizationKey(authKey);
+                AccessToken accessToken = validateReceivedAuthorizationKey(authKey);
                 if (accessToken!=null) {
                     if (accessToken.isExpired()) {
                         status = Status.DEADLINE_EXCEEDED.withDescription("token is already expired.");
                     }//if
                     else {
                         //AUTHENTICATED
+                        
                         BearerAuthHolder _holder= new BearerAuthHolder();
                         _holder.setAccessToken(accessToken);
                         _holder.setBearerAuthKey(bearerAuthKey);
@@ -126,9 +127,29 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     private AccessToken validateReceivedAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {
         log.info("start validateReceivedAuthorizationKey authKey=".concat(authKey));
         String serverUrl = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.auth-server-url", String.class).orElse("http://localhost:8180/auth/realms/studentgrade-realm");
+
+        AccessToken token = TokenVerifier.create(authKey, AccessToken.class).getToken();
+        if (token==null) {
+            throw new AuthServerInterceptorException("AccessToken cannot be verified and is null.");
+        }//if
+        if (token.getIssuer()==null) {
+            throw new AuthServerInterceptorException("AccessToken does not have Issuer.");
+        }//if
+        if (token.getIssuedFor()==null) {
+            throw new AuthServerInterceptorException("AccessToken does not have IssuedFor.");
+        }//if
+        if (!token.getIssuedFor().equals("studentgrade-service")) {
+            throw new AuthServerInterceptorException("AccessToken has invalid IssuedFor.");
+        }//if
+
+        int prefixRealmPos  = token.getIssuer().indexOf("studentgrade-");
+        String realmName = token.getIssuer().substring(prefixRealmPos);
+        log.debug("realmName=".concat(realmName));
+
         String userInfoPath = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.user-info-path", String.class).orElse("/protocol/openid-connect/userinfo");
 
-        String authURL = serverUrl.concat(userInfoPath);
+        String authURL = serverUrl.substring(0,prefixRealmPos).concat(realmName).concat(userInfoPath);
+        log.debug("authURL=".concat(authURL));
         Response response = given().auth().oauth2(authKey)
                                 .when().get(authURL)
                                 .then()
@@ -162,10 +183,16 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         }//if
         log.info(String.format("response emailVerified = %s%n", String.valueOf(resp_emailVerified)));
 
-        AccessToken token = TokenVerifier.create(authKey, AccessToken.class).getToken();
-        if (token==null) {
-            throw new AuthServerInterceptorException("AccessToken cannot be verified and is null.");
-        }//if
+        log.info("Acr="+token.getAcr());
+        log.info("Id="+token.getId());
+        log.info("IssuedFor="+token.getIssuedFor());
+        log.info("Issuer="+token.getIssuer());
+        log.info("Nonce="+token.getNonce());
+        log.info("Profile="+token.getProfile());
+        log.info("Scope="+token.getScope());
+        log.info("SessionState="+token.getSessionState());
+        log.info("Subject="+token.getSubject());
+        log.info("Type="+token.getType());
 
         if (token.getSubject()==null) {
             throw new AuthServerInterceptorException("AccessToken subject is null.");
