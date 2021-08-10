@@ -7,12 +7,10 @@ package com.students_information.stubs.student;
 // With this line, I am saying that create multiple classes rather than a single class
 option java_multiple_files = true;
 
-// This is the request message
 message StudentInfoRequest{
   string student_id = 1;
 }
 
-// This is the response message
 message StudentInfoResponse{
   string student_id = 1;
   string name = 2;
@@ -41,6 +39,12 @@ message StudentReadResponse{
   string name = 2;
   int32 age = 3;
   Gender gender = 4;
+}
+
+message StudentListAllRequest {
+}
+message StudentListResponse {
+  repeated StudentReadResponse students=1;
 }
 
 message StudentUpdateRequest{
@@ -76,10 +80,10 @@ enum Gender{
 // Now let's define our service
 service StudentService{
   rpc getStudentInfo(StudentInfoRequest) returns (StudentInfoResponse);
-
+ 
   rpc create(StudentCreateRequest) returns (StudentCreateResponse);
   rpc read(StudentReadRequest) returns (StudentReadResponse);
   rpc update(StudentUpdateRequest) returns (StudentUpdateResponse);
   rpc delete(StudentDeleteRequest) returns (StudentDeleteResponse);
-
+  rpc listAll(StudentListAllRequest) returns (StudentListResponse);
 }

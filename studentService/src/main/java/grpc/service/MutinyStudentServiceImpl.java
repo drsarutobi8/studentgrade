@@ -1,5 +1,7 @@
 package grpc.service;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import com.students_information.stubs.student.Gender;
@@ -11,17 +13,20 @@ import com.students_information.stubs.student.StudentDeleteRequest;
 import com.students_information.stubs.student.StudentDeleteResponse;
 import com.students_information.stubs.student.StudentInfoRequest;
 import com.students_information.stubs.student.StudentInfoResponse;
+import com.students_information.stubs.student.StudentListAllRequest;
+import com.students_information.stubs.student.StudentListResponse;
 import com.students_information.stubs.student.StudentReadRequest;
 import com.students_information.stubs.student.StudentReadResponse;
 import com.students_information.stubs.student.StudentUpdateRequest;
 import com.students_information.stubs.student.StudentUpdateResponse;
 
+import dao.StudentDao;
 import domain.Student;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
 import service.StudentService;
-import service.UnknownStudentServiceException;
 import value.StudentInfo;
 
 @GrpcService
@@ -141,4 +146,37 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
         return response;
     }
 
+    @Inject
+    Vertx vertx;
+
+    @Inject
+    StudentDao studentDao;
+
+    @Override
+    public Uni<StudentListResponse> listAll(StudentListAllRequest request) {
+        log.info("start grpcService.listAll");    
+
+        Uni<List<Student>> studentsUni = studentService.listAll();
+        Uni<StudentListResponse> listReponseUni = studentsUni
+                                                        .onItem()
+                                                            .transformToUni(students -> prepareListResponse(students));
+
+        return listReponseUni;
+    }
+
+    private Uni<StudentListResponse> prepareListResponse(List<Student> students) {
+        StudentListResponse.Builder listReponseBuilder = StudentListResponse.newBuilder();
+        if (students!=null && !students.isEmpty()) {
+            students.stream().
+                forEach(student -> 
+                    listReponseBuilder.addStudents(StudentReadResponse.newBuilder()
+                        .setAge(student.getAge())
+                        .setGender(Gender.valueOf(student.getGender()))
+                        .setName(student.getName())
+                        .setStudentId(student.getStudentId())
+                        .build())
+                );
+        }//if
+        return Uni.createFrom().item(listReponseBuilder.build());
+    }
 }

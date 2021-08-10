@@ -141,6 +141,12 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         if (!token.getIssuedFor().equals("studentgrade-service")) {
             throw new AuthServerInterceptorException("AccessToken has invalid IssuedFor.");
         }//if
+        if (token.getType()==null) {
+            throw new AuthServerInterceptorException("AccessToken does not have Type.");
+        }//if
+        if (!token.getType().equals("Bearer")) {
+            throw new AuthServerInterceptorException("AccessToken has invalid Type.");
+        }//if
 
         int prefixRealmPos  = token.getIssuer().indexOf("studentgrade-");
         String realmName = token.getIssuer().substring(prefixRealmPos);
@@ -181,18 +187,18 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         if (resp_emailVerified==null) {
             throw new AuthServerInterceptorException("Response emailVerified is null");
         }//if
-        log.info(String.format("response emailVerified = %s%n", String.valueOf(resp_emailVerified)));
+        log.debug(String.format("response emailVerified = %s%n", String.valueOf(resp_emailVerified)));
 
-        log.info("Acr="+token.getAcr());
-        log.info("Id="+token.getId());
-        log.info("IssuedFor="+token.getIssuedFor());
-        log.info("Issuer="+token.getIssuer());
-        log.info("Nonce="+token.getNonce());
-        log.info("Profile="+token.getProfile());
-        log.info("Scope="+token.getScope());
-        log.info("SessionState="+token.getSessionState());
-        log.info("Subject="+token.getSubject());
-        log.info("Type="+token.getType());
+        log.debug("Acr="+token.getAcr());
+        log.debug("Id="+token.getId());
+        log.debug("IssuedFor="+token.getIssuedFor());
+        log.debug("Issuer="+token.getIssuer());
+        log.debug("Nonce="+token.getNonce());
+        log.debug("Profile="+token.getProfile());
+        log.debug("Scope="+token.getScope());
+        log.debug("SessionState="+token.getSessionState());
+        log.debug("Subject="+token.getSubject());
+        log.debug("Type="+token.getType());
 
         if (token.getSubject()==null) {
             throw new AuthServerInterceptorException("AccessToken subject is null.");

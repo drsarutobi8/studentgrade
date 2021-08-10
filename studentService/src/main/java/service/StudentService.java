@@ -1,5 +1,6 @@
 package service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -79,6 +80,15 @@ public class StudentService {
                         .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(studentId)));
     }
 
+    public Uni<List<Student>> listAll() {
+        log.info("listing All");
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+        }//if
+        Uni<List<Student>> studentListUni = studentDao.listAll();
+        return studentListUni;
+    }
+
     @GrpcClient("result")
     MutinyResultServiceGrpc.MutinyResultServiceStub resultClient;
 
@@ -94,39 +104,45 @@ public class StudentService {
                                                     .failWith(new UnknownStudentServiceException(studentId))
                                             .onItem()
                                                 .ifNotNull()
-                                                    .transformToUni(student -> 
-                                                        resultClient.read(prepareResultRequest(student))
-                                                            .onItem()
-                                                                .transformToUni(resultRes -> prepareStudentInfo(student, resultRes))
-                                                            .onFailure()
-                                                                .recoverWithItem(StudentInfo.builder()
-                                                                    .age(student.getAge())
-                                                                    .gender(student.getGender())
-                                                                    .name(student.getName())
-                                                                    .studentId(student.getStudentId())
-                                                                    .art(Grade.UNKNOWN.name())
-                                                                    .maths(Grade.UNKNOWN.name())
-                                                                    .chemistry(Grade.UNKNOWN.name())
-                                                                    .build())
-                                                    );
+                                                    .transformToUni(student -> prepareStudentInfoUni(student));
         return studentInfoUni;
     }
 
-    private static ResultReadRequest prepareResultRequest(Student student) {
+    private Uni<StudentInfo> prepareStudentInfoUni(Student student) {
+        return resultClient.read(prepareResultReadRequest(student))
+        .onItem()
+            .transformToUni(resultRes -> prepareStudentInfoUni(student, resultRes))
+        .onFailure()
+            .recoverWithItem(StudentInfo.builder()
+                .age(student.getAge())
+                .gender(student.getGender())
+                .name(student.getName())
+                .studentId(student.getStudentId())
+                .art(Grade.UNKNOWN.name())
+                .maths(Grade.UNKNOWN.name())
+                .chemistry(Grade.UNKNOWN.name())
+                .build());
+    }
+
+    private static ResultReadRequest prepareResultReadRequest(Student student) {
         return ResultReadRequest.newBuilder().setStudentId(student.getStudentId()).build();
     }
 
-    private static Uni<StudentInfo> prepareStudentInfo(Student student, ResultReadResponse resultResponse) {
-        return Uni.createFrom().item(
-            StudentInfo.builder()
-            .studentId(student.getStudentId())
-            .name(student.getName())
-            .age(student.getAge())
-            .gender(student.getGender())
-            .maths(resultResponse.getMaths().toString())
-            .art(resultResponse.getArt().toString())
-            .chemistry(resultResponse.getChemistry().toString())
-            .build());
+    private static Uni<StudentInfo> prepareStudentInfoUni(Student student, ResultReadResponse resultRes) {
+        return Uni.createFrom().item(prepareStudentInfo(student, resultRes));
     }
+
+    private static StudentInfo prepareStudentInfo(Student student, ResultReadResponse resultRes) {
+        return StudentInfo.builder()
+                .studentId(student.getStudentId())
+                .name(student.getName())
+                .age(student.getAge())
+                .gender(student.getGender())
+                .maths(resultRes.getMaths().toString())
+                .art(resultRes.getArt().toString())
+                .chemistry(resultRes.getChemistry().toString())
+                .build();
+    }
+
 
 }
