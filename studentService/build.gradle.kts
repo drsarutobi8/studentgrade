@@ -43,6 +43,7 @@ dependencies {
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
+    implementation("io.quarkus:quarkus-hibernate-validator")
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-reactive-mysql-client")

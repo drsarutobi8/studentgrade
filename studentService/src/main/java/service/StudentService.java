@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.Valid;
 
 import dao.StudentDao;
 import domain.Student;
@@ -23,8 +24,7 @@ public class StudentService {
     @Inject
     StudentDao studentDao;
 
-
-    public Uni<Student> create(Student student) {
+    public Uni<Student> create(@Valid Student student) {
         log.info("creating studentId=".concat(student.getStudentId()));
 
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
@@ -42,7 +42,7 @@ public class StudentService {
         return studentUni;
     }
 
-    public Uni<Student> update(Student student) {
+    public Uni<Student> update(@Valid Student student) {
         log.info("updating studentId=".concat(student.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
