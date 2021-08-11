@@ -1,5 +1,6 @@
 package grpc.service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
@@ -9,6 +10,8 @@ import com.students_information.stubs.result.ResultCreateRequest;
 import com.students_information.stubs.result.ResultCreateResponse;
 import com.students_information.stubs.result.ResultDeleteRequest;
 import com.students_information.stubs.result.ResultDeleteResponse;
+import com.students_information.stubs.result.ResultListAllRequest;
+import com.students_information.stubs.result.ResultListResponse;
 import com.students_information.stubs.result.ResultReadRequest;
 import com.students_information.stubs.result.ResultReadResponse;
 import com.students_information.stubs.result.ResultServiceGrpc;
@@ -97,6 +100,7 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
         }//catch
     }
 
+    @Override
     public void delete(ResultDeleteRequest request, StreamObserver<ResultDeleteResponse> responseObserver) {
         String studentId = request.getStudentId();
         try {
@@ -111,4 +115,23 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
         }//catch
     }
+
+    @Override
+    public void listAll(ResultListAllRequest request, StreamObserver<ResultListResponse> responseObserver) {
+        ResultListResponse.Builder builder = ResultListResponse.newBuilder();
+        List<Result> results = resultService.listAll();
+        results.stream()
+            .forEach(result -> builder.addResults(
+                                            ResultReadResponse.newBuilder()
+                                                .setArt(Grade.valueOf(result.getArt()))
+                                                .setChemistry(Grade.valueOf(result.getChemistry()))
+                                                .setMaths(Grade.valueOf(result.getMaths()))
+                                                .setStudentId(result.getStudentId())
+                                                .build()
+                                        )
+                                );
+        responseObserver.onNext(builder.build());
+        responseObserver.onCompleted();
+    }
+
 }

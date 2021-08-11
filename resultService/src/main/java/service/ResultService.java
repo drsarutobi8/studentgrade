@@ -1,5 +1,6 @@
 package service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -72,6 +73,16 @@ public class ResultService {
         else {
             return resultDao.delete("studentId", studentId);
         }//else
+    }
+
+    @Transactional
+    public List<Result> listAll() {
+        log.info("listing All");
+        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+        }//if
+        List<Result> resultList = resultDao.listAll();
+        return resultList;
     }
 
 }
