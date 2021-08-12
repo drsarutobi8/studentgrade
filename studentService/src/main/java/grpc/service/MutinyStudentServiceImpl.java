@@ -1,14 +1,15 @@
 package grpc.service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
 import com.students_information.stubs.result.MutinyResultServiceGrpc;
 import com.students_information.stubs.result.ResultReadRequest;
 import com.students_information.stubs.result.ResultReadResponse;
-import com.students_information.stubs.student.Gender;
 import com.students_information.stubs.student.Grade;
+import com.students_information.stubs.student.Gender;
 import com.students_information.stubs.student.MutinyStudentServiceGrpc;
 import com.students_information.stubs.student.StudentCreateRequest;
 import com.students_information.stubs.student.StudentCreateResponse;
@@ -31,8 +32,9 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 import service.StudentService;
-import service.UnknownStudentServiceException;
+import tenant.InvalidTenantException;
 import value.StudentInfo;
+import value.StudentPK;
 
 @GrpcService
 @Slf4j
@@ -49,32 +51,41 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     // So, let's override the getStudentInfo method here.
     @Override
     public Uni<StudentInfoResponse> getInfo(StudentInfoRequest request) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();// the student Id should be passed with the request message
         log.info("start grpcService.getInfo studentId=".concat(studentId));    
-        Uni<Student> studentUni = studentService.read(studentId);
-        Uni<StudentInfo> studentInfoUni = studentUni
-                                            .onItem()
-                                                .ifNull()
-                                                    .failWith(new UnknownStudentServiceException(studentId))
-                                            .onItem()
-                                                .ifNotNull()
-                                                    .transformToUni(student -> prepareStudentInfoUni(student));
-        Uni<StudentInfoResponse> response = studentInfoUni
-                                            .onItem()
-                                                .transformToUni(info -> Uni.createFrom().item(
-                                                    StudentInfoResponse.newBuilder()
-                                                    .setStudentId(info.getStudentId())
-                                                    .setName(info.getName())
-                                                    .setAge(info.getAge())
-                                                    .setGender((info.getGender()==null)?null:Gender.valueOf(info.getGender()))
-                                                    .setMaths((info.getMaths()==null)?Grade.UNKNOWN:Grade.valueOf(info.getMaths()))
-                                                    .setArt((info.getArt()==null)?Grade.UNKNOWN:Grade.valueOf(info.getArt()))
-                                                    .setChemistry((info.getChemistry()==null)?Grade.UNKNOWN:Grade.valueOf(info.getChemistry()))
-                                                    .build()
-                                                )
-                                            .onFailure()
-                                                .recoverWithItem(StudentInfoResponse.newBuilder().build()));
-        return response;
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
+        try {
+            Uni<Student> studentUni = studentService.read(studentPK);
+            Uni<StudentInfo> studentInfoUni = studentUni
+                                                .onItem()
+                                                    .ifNull()
+                                                        .failWith(new NoSuchElementException())
+                                                .onItem()
+                                                    .ifNotNull()
+                                                        .transformToUni(student -> prepareStudentInfoUni(student));
+                                                            Uni<StudentInfoResponse> response = studentInfoUni
+                                                                        .onItem()
+                                                                            .transformToUni(info -> Uni.createFrom().item(
+                                                                                StudentInfoResponse.newBuilder()
+                                                                                .setSchoolId(info.getSchoolId())
+                                                                                .setStudentId(info.getStudentId())
+                                                                                .setName(info.getName())
+                                                                                .setAge(info.getAge())
+                                                                                .setGender((info.getGender()==null)?null:Gender.valueOf(info.getGender()))
+                                                                                .setMaths((info.getMaths()==null)?Grade.UNKNOWN:Grade.valueOf(info.getMaths()))
+                                                                                .setArt((info.getArt()==null)?Grade.UNKNOWN:Grade.valueOf(info.getArt()))
+                                                                                .setChemistry((info.getChemistry()==null)?Grade.UNKNOWN:Grade.valueOf(info.getChemistry()))
+                                                                                .build()
+                                                                            )
+                                                                        .onFailure()
+                                                                            .recoverWithItem(StudentInfoResponse.newBuilder().build()));
+            return response;
+        }//try
+        catch (InvalidTenantException e) {
+            e.printStackTrace();
+            return Uni.createFrom().item(StudentInfoResponse.newBuilder().build());
+        }//catch
     }
 
     private Uni<StudentInfo> prepareStudentInfoUni(Student student) {
@@ -86,6 +97,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
                 .age(student.getAge())
                 .gender(student.getGender())
                 .name(student.getName())
+                .schoolId(student.getSchoolId())
                 .studentId(student.getStudentId())
                 .art(Grade.UNKNOWN.name())
                 .maths(Grade.UNKNOWN.name())
@@ -103,6 +115,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
 
     private static StudentInfo prepareStudentInfo(Student student, ResultReadResponse resultRes) {
         return StudentInfo.builder()
+                .schoolId(student.getSchoolId())
                 .studentId(student.getStudentId())
                 .name(student.getName())
                 .age(student.getAge())
@@ -181,82 +194,121 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
         newStudent.setAge(request.getAge());
         newStudent.setGender(request.getGender().toString());
         newStudent.setName(request.getName());
+        newStudent.setSchoolId(request.getSchoolId());
         newStudent.setStudentId(request.getStudentId());
-        Uni<Student> studentUni = studentService.create(newStudent);   
-        Uni<StudentCreateResponse> response = studentUni
-                                            .onItem()
-                                                .transformToUni(student -> Uni.createFrom().item(
-                                                    StudentCreateResponse.newBuilder()
-                                                    .setStudentId(student.getStudentId())
-                                                    .build()
-                                                )
-                                            .onFailure()
-                                                .recoverWithItem(StudentCreateResponse.newBuilder().build()));
-        return response;
+        Uni<Student> studentUni;
+        try {
+            studentUni = studentService.create(newStudent);
+            Uni<StudentCreateResponse> response = studentUni
+                                                    .onItem()
+                                                        .transformToUni(student -> Uni.createFrom().item(
+                                                            StudentCreateResponse.newBuilder()
+                                                            .setSchoolId(student.getSchoolId())
+                                                            .setStudentId(student.getStudentId())
+                                                            .build()
+                                                        )
+                                                    .onFailure()
+                                                        .recoverWithItem(StudentCreateResponse.newBuilder().build()));
+            return response;
+        }//try
+        catch (InvalidTenantException e) {
+            e.printStackTrace();
+            return Uni.createFrom().item(StudentCreateResponse.newBuilder().build());
+        }//catch
     }
 
     @Override
     public Uni<StudentReadResponse> read(StudentReadRequest request) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();
-        log.info("start grpcService.read studentId=".concat(studentId));    
-        Uni<Student> studentUni = studentService.read(studentId);
-        Uni<StudentReadResponse> response = studentUni
-                                            .onItem()
-                                                .transformToUni(student -> Uni.createFrom().item(
-                                                    StudentReadResponse.newBuilder()
-                                                    .setStudentId(student.getStudentId())
-                                                    .setName(student.getName())
-                                                    .setAge(student.getAge())
-                                                    .setGender(Gender.valueOf(student.getGender()))
-                                                    .build()
-                                                )
-                                            .onFailure()
-                                                .recoverWithItem(StudentReadResponse.newBuilder().build()));
-        return response;
+        log.info("start grpcService.read studentId=".concat(studentId));
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
+        Uni<Student> studentUni;
+        try {
+            studentUni = studentService.read(studentPK);
+            Uni<StudentReadResponse> response = studentUni
+            .onItem()
+                .ifNotNull()
+                    .transformToUni(student -> Uni.createFrom().item(
+                        StudentReadResponse.newBuilder()
+                        .setSchoolId(student.getSchoolId())
+                        .setStudentId(student.getStudentId())
+                        .setName(student.getName())
+                        .setAge(student.getAge())
+                        .setGender(Gender.valueOf(student.getGender()))
+                        .build()
+                    )
+            .onItem()
+                .ifNull()
+                    .continueWith(StudentReadResponse.newBuilder().build())
+            .onFailure()
+                .recoverWithItem(StudentReadResponse.newBuilder().build()));
+            return response;
+        }//try
+        catch (InvalidTenantException e) {
+            e.printStackTrace();
+            return Uni.createFrom().item(StudentReadResponse.newBuilder().build());
+        }//catch
     }
 
     @Override
     public Uni<StudentUpdateResponse> update(StudentUpdateRequest request) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();
         log.info("start grpcService.update studentId=".concat(studentId));
         Student updatingStudent = new Student();
         updatingStudent.setAge(request.getAge());
         updatingStudent.setGender(request.getGender().toString());
         updatingStudent.setName(request.getName());
-        updatingStudent.setStudentId(request.getStudentId());
-        Uni<Student> studentUni = studentService.update(updatingStudent);   
-        Uni<StudentUpdateResponse> response = studentUni
-                                            .onItem()
-                                                .transformToUni(student -> Uni.createFrom().item(
-                                                    StudentUpdateResponse.newBuilder()
-                                                    .setStudentId(student.getStudentId())
-                                                    .build()
-                                                )
-                                            .onFailure()
-                                                .recoverWithItem(StudentUpdateResponse.newBuilder().build()));
-        return response;
+        updatingStudent.setSchoolId(schoolId);
+        updatingStudent.setStudentId(studentId);
+        try {
+            Uni<Student> studentUni = studentService.update(updatingStudent);
+            Uni<StudentUpdateResponse> response = studentUni
+            .onItem()
+                .transformToUni(student -> Uni.createFrom().item(
+                    StudentUpdateResponse.newBuilder()
+                    .setSchoolId(student.getSchoolId())
+                    .setStudentId(student.getStudentId())
+                    .build()
+                )
+            .onFailure()
+                .recoverWithItem(StudentUpdateResponse.newBuilder().build()));
+            return response;
+        }//try
+        catch (InvalidTenantException e) {
+            e.printStackTrace();
+            return Uni.createFrom().item(StudentUpdateResponse.newBuilder().build());
+        }//catch
     }
 
     @Override
     public Uni<StudentDeleteResponse> delete(StudentDeleteRequest request) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();
-        log.info("start grpcService.delete studentId=".concat(studentId));    
-        Uni<Long> deletedCountUni = studentService.delete(studentId);
-        Uni<StudentDeleteResponse> response = deletedCountUni
-                                                .onItem()
-                                                    .transformToUni(deletedCount -> Uni.createFrom().item(
-                                                        StudentDeleteResponse.newBuilder()
-                                                        .setDeletedCount(deletedCount)
-                                                        .build()
-                                                    )
-                                                .onFailure()
-                                                    .recoverWithItem(StudentDeleteResponse.newBuilder()
-                                                                                            .setDeletedCount(0l)
-                                                                                            .build()
-                                                    ));
-        return response;
+        log.info("start grpcService.delete studentId=".concat(studentId));
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
+        try {
+            Uni<Long> deletedCountUni = studentService.delete(studentPK);
+            Uni<StudentDeleteResponse> response = deletedCountUni
+                                                    .onItem()
+                                                        .transformToUni(deletedCount -> Uni.createFrom().item(
+                                                            StudentDeleteResponse.newBuilder()
+                                                            .setDeletedCount(deletedCount)
+                                                            .build()
+                                                        )
+                                                    .onFailure()
+                                                        .recoverWithItem(StudentDeleteResponse.newBuilder()
+                                                                                                .setDeletedCount(0l)
+                                                                                                .build()
+                                                        ));
+            return response;
+        }//try
+        catch (InvalidTenantException e) {
+            e.printStackTrace();
+            return Uni.createFrom().item(StudentDeleteResponse.newBuilder().build());
+        }//catch
     }
-
  
     @Override
     public Uni<StudentListResponse> listAll(StudentListAllRequest request) {
@@ -279,6 +331,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
                         .setAge(student.getAge())
                         .setGender(Gender.valueOf(student.getGender()))
                         .setName(student.getName())
+                        .setSchoolId(student.getSchoolId())
                         .setStudentId(student.getStudentId())
                         .build())
                 );

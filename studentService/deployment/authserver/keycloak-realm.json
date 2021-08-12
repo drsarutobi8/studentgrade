@@ -1,6 +1,6 @@
 {
-  "id": "studentgrade-realm",
-  "realm": "studentgrade-realm",
+  "id": "studentgrade-abc",
+  "realm": "studentgrade-abc",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
@@ -50,7 +50,7 @@
         "name": "admin",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       },
       {
@@ -58,7 +58,7 @@
         "name": "confidential",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       },
       {
@@ -67,7 +67,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       },
       {
@@ -76,16 +76,16 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       },
       {
         "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-        "name": "default-roles-studentgrade-realm",
+        "name": "default-roles-studentgrade-abc",
         "description": "${role_default-roles}",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       },
       {
@@ -93,7 +93,7 @@
         "name": "user",
         "composite": false,
         "clientRole": false,
-        "containerId": "studentgrade-realm",
+        "containerId": "studentgrade-abc",
         "attributes": {}
       }
     ],
@@ -434,11 +434,11 @@
   "groups": [],
   "defaultRole": {
     "id": "049aac64-a35d-492e-bd13-75a78443f14e",
-    "name": "default-roles-studentgrade-realm",
+    "name": "default-roles-studentgrade-abc",
     "description": "${role_default-roles}",
     "composite": false,
     "clientRole": false,
-    "containerId": "studentgrade-realm"
+    "containerId": "studentgrade-abc"
   },
   "requiredCredentials": [
     "password"
@@ -521,14 +521,14 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/studentgrade-realm/account/",
+      "baseUrl": "/realms/studentgrade-abc/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/realms/studentgrade-realm/account/*"
+        "/realms/studentgrade-abc/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -563,13 +563,13 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/studentgrade-realm/account/",
+      "baseUrl": "/realms/studentgrade-abc/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/studentgrade-realm/account/*"
+        "/realms/studentgrade-abc/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -730,14 +730,14 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/studentgrade-realm/console/",
+      "baseUrl": "/admin/studentgrade-abc/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/admin/studentgrade-realm/console/*"
+        "/admin/studentgrade-abc/console/*"
       ],
       "webOrigins": [
         "+"

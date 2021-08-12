@@ -15,23 +15,27 @@ enum Grade{
 }
 
 message ResultCreateRequest{
-  string student_id = 1;
-  Grade maths = 2;
-  Grade art = 3;
-  Grade chemistry = 4;
+  string school_id = 1;
+  string student_id = 2;
+  Grade maths = 3;
+  Grade art = 4;
+  Grade chemistry = 5;
 }
 message ResultCreateResponse{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 
 message ResultReadRequest{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 message ResultReadResponse{
-  string student_id = 1;
-  Grade maths = 2;
-  Grade art = 3;
-  Grade chemistry = 4;
+  string school_id = 1;
+  string student_id = 2;
+  Grade maths = 3;
+  Grade art = 4;
+  Grade chemistry = 5;
 }
 
 message ResultListAllRequest{
@@ -41,17 +45,20 @@ message ResultListResponse{
 }
 
 message ResultUpdateRequest{
-  string student_id = 1;
-  Grade maths = 2;
-  Grade art = 3;
-  Grade chemistry = 4;
+  string school_id = 1;
+  string student_id = 2;
+  Grade maths = 3;
+  Grade art = 4;
+  Grade chemistry = 5;
 }
 message ResultUpdateResponse{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 
 message ResultDeleteRequest{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 message ResultDeleteResponse{
   int64 deletedCount = 1;

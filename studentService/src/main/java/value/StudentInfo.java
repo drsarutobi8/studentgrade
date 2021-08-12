@@ -8,7 +8,7 @@ import lombok.ToString;
 @Builder
 @ToString
 public class StudentInfo {
-
+    String schoolId;
     String studentId;
     String name;
     Integer age;

@@ -13,6 +13,9 @@ import grpc.interceptor.BearerAuthHolder;
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
+import tenant.InvalidTenantException;
+import tenant.TenantValidator;
+import value.StudentPK;
 
 @ApplicationScoped
 @Slf4j
@@ -24,31 +27,35 @@ public class StudentService {
     @Inject
     StudentDao studentDao;
 
-    public Uni<Student> create(@Valid Student student) {
+    public Uni<Student> create(@Valid Student student) throws InvalidTenantException {
         log.info("creating studentId=".concat(student.getStudentId()));
 
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), student);
         }//if
+
         return Panache.withTransaction(() -> studentDao.persist(student));
     }
 
-    public Uni<Student> read(String studentId) {
-        log.info("reading studentId=".concat(studentId));
+    public Uni<Student> read(StudentPK studentPK) throws InvalidTenantException {
+        log.info("reading studentId=".concat(studentPK.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
-        Uni<Student> studentUni = studentDao.findByStudentId(studentId); // Let's find the student information from the student table
-        return studentUni;
+        return studentDao.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
-    public Uni<Student> update(@Valid Student student) {
+    public Uni<Student> update(@Valid Student student) throws InvalidTenantException {
+        log.info("updating schoolId=".concat(student.getSchoolId()));
         log.info("updating studentId=".concat(student.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), student);
         }//if
 
-        return Panache.withTransaction(() -> studentDao.findByStudentId(student.getStudentId())
+        return Panache.withTransaction(() -> studentDao.findBySchoolIdStudentId(student.getSchoolId(), student.getStudentId())
                                             .onItem()
                                                 .ifNotNull()
                                                     .invoke(st -> {
@@ -59,28 +66,32 @@ public class StudentService {
                                         )
                                         .onItem()
                                             .ifNull()
-                                                .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(student.getStudentId())));
+                                                .failWith(new NoSuchElementException("Unknown Student with studentPK=".concat(student.getPK().toString())));
     }
 
-    public Uni<Long> delete(String studentId) {
-        log.info("deleting studentId=".concat(studentId));
+    public Uni<Long> delete(StudentPK studentPK) throws InvalidTenantException {
+        log.info("deleting schoolId=".concat(studentPK.getSchoolId()));
+        log.info("deleting studentId=".concat(studentPK.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
 
-        return Panache.withTransaction(() -> studentDao.deleteByStudentId(studentId))
-                .onItem()
-                    .ifNull()
-                        .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(studentId)));
+        return Panache.withTransaction(() -> studentDao.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId()))
+                                        .onItem()
+                                            .ifNull()
+                                                .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(studentPK.getStudentId())));
     }
 
     public Uni<List<Student>> listAll() {
         log.info("listing All");
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            if (authHolder.getTenantId()!=null) {
+                return studentDao.findBySchooldId(authHolder.getTenantId());
+            }//if
         }//if
-        Uni<List<Student>> studentListUni = studentDao.listAll();
-        return studentListUni;
+        return studentDao.listAll();
     }
 
 }

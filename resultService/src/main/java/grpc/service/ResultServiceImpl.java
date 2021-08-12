@@ -25,6 +25,8 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import lombok.extern.slf4j.Slf4j;
 import service.ResultService;
+import tenant.InvalidTenantException;
+import value.StudentPK;
 
 @GrpcService
 @Blocking
@@ -42,9 +44,11 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             creatingResult.setArt(request.getArt().toString());
             creatingResult.setChemistry(request.getChemistry().toString());
             creatingResult.setMaths(request.getMaths().toString());
+            creatingResult.setSchoolId(request.getSchoolId());
             creatingResult.setStudentId(request.getStudentId());
             Result result = resultService.create(creatingResult);
             ResultCreateResponse resultResponse = ResultCreateResponse.newBuilder()
+                                                .setSchoolId(result.getSchoolId())
                                                 .setStudentId(result.getStudentId())
                                                 .build();
             responseObserver.onNext(resultResponse);
@@ -54,14 +58,21 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             log.error("NO RESULT FOUND WITH THE STUDENT ID :- " + studentId);
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
         }//catch
+        catch (InvalidTenantException e) {
+            log.error("INVALID TENANT ID :- " + e.getInvalidTenantId());
+            responseObserver.onError(Status.INVALID_ARGUMENT.asException());
+        }//catch
     }
 
     @Override
     public void read(ResultReadRequest request, StreamObserver<ResultReadResponse> responseObserver) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
         try {
-            Result result = resultService.read(studentId);
+            Result result = resultService.read(studentPK);
             ResultReadResponse.Builder builder = ResultReadResponse.newBuilder()
+                                                .setSchoolId(schoolId)
                                                 .setStudentId(studentId);
             if (result!=null) {
                 builder.setMaths(Grade.valueOf(result.getMaths()))
@@ -76,6 +87,10 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             log.error("NO RESULT FOUND WITH THE STUDENT ID :- " + studentId);
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
         }//catch
+        catch (InvalidTenantException e) {
+            log.error("INVALID TENANT ID :- " + e.getInvalidTenantId());
+            responseObserver.onError(Status.INVALID_ARGUMENT.asException());
+        }//catch
     }
 
     @Override
@@ -87,8 +102,10 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             updatingResult.setChemistry(request.getChemistry().toString());
             updatingResult.setMaths(request.getMaths().toString());
             updatingResult.setStudentId(request.getStudentId());
+            updatingResult.setSchoolId(request.getSchoolId());
             Result result = resultService.update(updatingResult);
             ResultUpdateResponse resultResponse = ResultUpdateResponse.newBuilder()
+                                                .setSchoolId(result.getSchoolId())
                                                 .setStudentId(result.getStudentId())
                                                 .build();
             responseObserver.onNext(resultResponse);
@@ -98,13 +115,19 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             log.error("NO RESULT FOUND WITH THE STUDENT ID :- " + studentId);
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
         }//catch
+        catch (InvalidTenantException e) {
+            log.error("INVALID TENANT ID :- " + e.getInvalidTenantId());
+            responseObserver.onError(Status.INVALID_ARGUMENT.asException());
+        }//catch
     }
 
     @Override
     public void delete(ResultDeleteRequest request, StreamObserver<ResultDeleteResponse> responseObserver) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
         try {
-            long deletedCount = resultService.delete(studentId);
+            long deletedCount = resultService.delete(studentPK);
             ResultDeleteResponse resultResponse = ResultDeleteResponse.newBuilder()
                                                 .setDeletedCount(deletedCount).build();
             responseObserver.onNext(resultResponse);
@@ -113,6 +136,10 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
         catch (NoSuchElementException e) {
             log.error("NO RESULT FOUND WITH THE STUDENT ID :- " + studentId);
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
+        }//catch
+        catch (InvalidTenantException e) {
+            log.error("INVALID TENANT ID :- " + e.getInvalidTenantId());
+            responseObserver.onError(Status.INVALID_ARGUMENT.asException());
         }//catch
     }
 
@@ -126,6 +153,7 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
                                                 .setArt(Grade.valueOf(result.getArt()))
                                                 .setChemistry(Grade.valueOf(result.getChemistry()))
                                                 .setMaths(Grade.valueOf(result.getMaths()))
+                                                .setSchoolId(result.getSchoolId())
                                                 .setStudentId(result.getStudentId())
                                                 .build()
                                         )

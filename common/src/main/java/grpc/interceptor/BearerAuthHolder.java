@@ -14,6 +14,7 @@ import org.keycloak.representations.AccessToken.Access;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import tenant.ITenantValue;
 
 @Getter
 @RequestScoped
@@ -21,16 +22,12 @@ public class BearerAuthHolder {
     @Setter
     private String bearerAuthKey;
 
+    @Setter
+    private String tenantId;
+
     private AccessToken accessToken;
     private Set<String> roles;
     private Principal principal;
-
-    public void copy(BearerAuthHolder _holder) {
-        this.bearerAuthKey  = _holder.getBearerAuthKey();
-        this.accessToken    = _holder.getAccessToken();
-        this.roles  = _holder.getRoles();
-        this.principal = _holder.getPrincipal();
-    }
 
     public void setAccessToken(AccessToken accessToken) {
         this.accessToken    = accessToken;
@@ -48,6 +45,14 @@ public class BearerAuthHolder {
         this.roles = roles;
     }
 
+    public void copy(BearerAuthHolder _holder) {
+        this.bearerAuthKey  = _holder.getBearerAuthKey();
+        this.accessToken    = _holder.getAccessToken();
+        this.roles  = _holder.getRoles();
+        this.principal = _holder.getPrincipal();
+        this.tenantId = _holder.getTenantId();
+    }
+
     public boolean isRolesAllowed(Set<String> rolesAllowed) {
         boolean authorized = false;
         for (Iterator<String> rolesIter = getRoles().iterator();(!authorized)&&rolesIter.hasNext();) {
@@ -63,4 +68,9 @@ public class BearerAuthHolder {
         }
         private String name;
     }
+
+    public boolean isValidTenant(ITenantValue iTenantValue) {
+        return tenantId.equals(iTenantValue.getTenantId());
+    }
+
 }

@@ -11,6 +11,9 @@ import dao.ResultDao;
 import domain.Result;
 import grpc.interceptor.BearerAuthHolder;
 import lombok.extern.slf4j.Slf4j;
+import tenant.InvalidTenantException;
+import tenant.TenantValidator;
+import value.StudentPK;
 
 @ApplicationScoped
 @Slf4j
@@ -23,31 +26,35 @@ public class ResultService {
     BearerAuthHolder authHolder;
 
     @Transactional
-    public Result create(Result result) {
+    public Result create(Result result) throws InvalidTenantException {
         log.info("creating studentId=".concat(result.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), result);
         }//if
         resultDao.persist(result);
         return result;
     }
 
     @Transactional
-    public Result read(String studentId) {
-        log.info("reading studentId=".concat(studentId));
+    public Result read(StudentPK studentPK) throws InvalidTenantException {
+        log.info("reading studentId=".concat(studentPK.getSchoolId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
-        return resultDao.findByStudentId(studentId);
+        return resultDao.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
     @Transactional
-    public Result update(Result result) {
+    public Result update(Result result) throws InvalidTenantException {
         log.info("updating studentId=".concat(result.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), result);
         }//if
-        Result updatingResult = resultDao.findByStudentId(result.getStudentId());
+
+        Result updatingResult = resultDao.findBySchoolIdStudentId(authHolder.getTenantId(),result.getStudentId());
         if (updatingResult==null) {
             throw new NoSuchElementException("Unknown Result with studentId=".concat(result.getStudentId()));
         }//if
@@ -61,18 +68,13 @@ public class ResultService {
     }
 
     @Transactional
-    public long delete(String studentId) {
-        log.info("deleting studentId=".concat(studentId));
+    public long delete(StudentPK studentPK) throws InvalidTenantException {
+        log.info("deleting studentId=".concat(studentPK.getStudentId()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            TenantValidator.validate(authHolder.getTenantId(), studentPK);    
         }//if
-        Result result = resultDao.findByStudentId(studentId);
-        if (result==null) {
-            throw new NoSuchElementException("Unknown Result with studentId=".concat(studentId));
-        }//if
-        else {
-            return resultDao.delete("studentId", studentId);
-        }//else
+        return resultDao.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
     @Transactional
@@ -80,6 +82,7 @@ public class ResultService {
         log.info("listing All");
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            return resultDao.findBySchooldId(authHolder.getTenantId());
         }//if
         List<Result> resultList = resultDao.listAll();
         return resultList;

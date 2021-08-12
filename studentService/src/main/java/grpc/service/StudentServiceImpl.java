@@ -23,6 +23,8 @@ import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 import service.StudentService;
+import tenant.InvalidTenantException;
+import value.StudentPK;
 
 //@GrpcService
 @Blocking
@@ -39,19 +41,22 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
     // So, let's override the getStudentInfo method here.
     @Override
     public void getInfo(StudentInfoRequest request, StreamObserver<StudentInfoResponse> responseObserver) {
+        String schoolId = request.getSchoolId();
         String studentId = request.getStudentId();// the student ID should be passed with the request message
+        StudentPK studentPK = new StudentPK(schoolId, studentId);
 
         try{
-            Uni<Student> studentUni = studentService.read(studentId); // Let's find the student information from the student table
+            Uni<Student> studentUni = studentService.read(studentPK); // Let's find the student information from the student table
             Student student = studentUni.await().indefinitely();
             /*
                 The getResults method will help us to fetch the results for the student from the result service.
                 this method will call the result service through its client and bring back the result as a list of strings
              */
-            List<String> resultResponse = getResults(studentId);
+            List<String> resultResponse = getResults(studentPK);
 
             // Once all the results are clear, we can build our response message
             StudentInfoResponse studentInfoResponse = StudentInfoResponse.newBuilder()
+                    .setSchoolId(schoolId)
                     .setStudentId(studentId)
                     .setName(student.getName())
                     .setAge(student.getAge())
@@ -68,20 +73,28 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
             */
             responseObserver.onNext(studentInfoResponse);
             responseObserver.onCompleted();
-        }catch (NoSuchElementException e){
+        }//try
+        catch (NoSuchElementException e){
             log.error("NO STUDENT FOUND WITH THE STUDENT ID :- "+studentId);
-
             // If some error occurs we sent an error with the following status which is not_found
             responseObserver.onError(Status.NOT_FOUND.asRuntimeException());
-        }
+        }//catch
+        catch (InvalidTenantException e) {
+            log.error("INVALID SCHOOL ID :- "+ e.getInvalidTenantId());
+            // If some error occurs we sent an error with the following status which is not_found
+            responseObserver.onError(Status.INVALID_ARGUMENT.asRuntimeException());
+        }//catch
     }
 
     @GrpcClient("result")
     ResultServiceGrpc.ResultServiceBlockingStub resultClient;
 
-    public List<String> getResults(String studentId){
+    public List<String> getResults(StudentPK studentPK){
         // Creating the request object
-        ResultReadRequest resultRequest = ResultReadRequest.newBuilder().setStudentId(studentId).build();
+        ResultReadRequest resultRequest = ResultReadRequest.newBuilder()
+                                            .setSchoolId(studentPK.getSchoolId())
+                                            .setStudentId(studentPK.getStudentId())
+                                            .build();
         // Getting the response back
         ResultReadResponse resultResponse = resultClient.read(resultRequest);
         

@@ -4,12 +4,8 @@ import static io.restassured.RestAssured.given;
 import static javax.ws.rs.core.Response.Status.OK;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,10 +14,10 @@ import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.AccessToken.Access;
 
 import grpc.ref.Constants;
 import io.grpc.Context;
@@ -67,7 +63,6 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                     }//if
                     else {
                         //AUTHENTICATED
-                        
                         BearerAuthHolder _holder= new BearerAuthHolder();
                         _holder.setAccessToken(accessToken);
                         _holder.setBearerAuthKey(bearerAuthKey);
@@ -91,6 +86,11 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                             //SET REQUEST SCOPED AUTH HOLDER
                             authHolder.copy(_holder);
                             log.info("User ".concat(authHolder.getAccessToken().getPreferredUsername().concat(" is authorized.")));
+                        
+                            authHolder.setTenantId(getTenantId(accessToken));
+                            if (authHolder.getTenantId()!=null) {
+                                log.info("  from tenantId=".concat(authHolder.getTenantId()));
+                            }//if
                             return Contexts.interceptCall(Context.current(), call, requestHeaders, next);   
                         }//if
                     }//else
@@ -118,6 +118,9 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         }, requestHeaders);
 
     }
+
+    @ConfigProperty(name = "realm.prefix")
+    String realmPrefix;
 
     /**
      * According to https://stackoverflow.com/questions/48274251/keycloak-access-token-validation-end-point
@@ -148,13 +151,14 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             throw new AuthServerInterceptorException("AccessToken has invalid Type.");
         }//if
 
-        int prefixRealmPos  = token.getIssuer().indexOf("studentgrade-");
-        String realmName = token.getIssuer().substring(prefixRealmPos);
+        String realmName = getRealmName(token);
         log.debug("realmName=".concat(realmName));
 
         String userInfoPath = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.user-info-path", String.class).orElse("/protocol/openid-connect/userinfo");
 
+        int prefixRealmPos  = token.getIssuer().indexOf(realmPrefix);
         String authURL = serverUrl.substring(0,prefixRealmPos).concat(realmName).concat(userInfoPath);
+
         log.debug("authURL=".concat(authURL));
         Response response = given().auth().oauth2(authKey)
                                 .when().get(authURL)
@@ -244,6 +248,16 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         private AuthServerInterceptorException(String errorMsg) {
             super(errorMsg);
         }
+    }
+
+    private String getRealmName(AccessToken token) {
+        int prefixRealmPos  = token.getIssuer().indexOf(realmPrefix);
+        return token.getIssuer().substring(prefixRealmPos);
+    }
+
+    private String getTenantId(AccessToken token) {
+        int prefixRealmPos  = token.getIssuer().indexOf(realmPrefix);
+        return token.getIssuer().substring(prefixRealmPos+realmPrefix.length());
     }
 
     //https://dzone.com/articles/how-to-handle-checked-exception-in-lambda-expressi

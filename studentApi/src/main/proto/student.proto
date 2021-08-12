@@ -8,17 +8,19 @@ package com.students_information.stubs.student;
 option java_multiple_files = true;
 
 message StudentInfoRequest{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 
 message StudentInfoResponse{
-  string student_id = 1;
-  string name = 2;
-  int32 age = 3;
-  Gender gender = 4;
-  Grade maths = 5;
-  Grade art = 6;
-  Grade chemistry = 7;
+  string school_id = 1;
+  string student_id = 2;
+  string name = 3;
+  int32 age = 4;
+  Gender gender = 5;
+  Grade maths = 6;
+  Grade art = 7;
+  Grade chemistry = 8;
 }
 
 // message StudentInfoListAllRequest {
@@ -28,23 +30,27 @@ message StudentInfoResponse{
 // }
 
 message StudentCreateRequest{
-  string student_id = 1;
-  string name = 2;
-  int32 age = 3;
-  Gender gender = 4;
+  string school_id = 1;
+  string student_id = 2;
+  string name = 3;
+  int32 age = 4;
+  Gender gender = 5;
 }
 message StudentCreateResponse{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 
 message StudentReadRequest{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 message StudentReadResponse{
-  string student_id = 1;
-  string name = 2;
-  int32 age = 3;
-  Gender gender = 4;
+  string school_id = 1;
+  string student_id = 2;
+  string name = 3;
+  int32 age = 4;
+  Gender gender = 5;
 }
 
 message StudentListAllRequest {
@@ -54,17 +60,20 @@ message StudentListResponse {
 }
 
 message StudentUpdateRequest{
-  string student_id = 1;
-  string name = 2;
-  int32 age = 3;
-  Gender gender = 4;
+  string school_id = 1;
+  string student_id = 2;
+  string name = 3;
+  int32 age = 4;
+  Gender gender = 5;
 }
 message StudentUpdateResponse{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 
 message StudentDeleteRequest{
-  string student_id = 1;
+  string school_id = 1;
+  string student_id = 2;
 }
 message StudentDeleteResponse{
   int64 deletedCount = 1;
