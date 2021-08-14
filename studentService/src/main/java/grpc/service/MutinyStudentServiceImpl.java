@@ -89,7 +89,7 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     }
 
     private Uni<StudentInfo> prepareStudentInfoUni(Student student) {
-        return resultClient.read(prepareResultReadRequest(student.getStudentId()))
+        return resultClient.read(prepareResultReadRequest(student))
         .onItem()
             .transformToUni(resultRes -> prepareStudentInfoUni(student, resultRes))
         .onFailure()
@@ -105,8 +105,11 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
                 .build());
     }
 
-    private static ResultReadRequest prepareResultReadRequest(String studentId) {
-        return ResultReadRequest.newBuilder().setStudentId(studentId).build();
+    private static ResultReadRequest prepareResultReadRequest(Student student) {
+        return ResultReadRequest.newBuilder()
+            .setSchoolId(student.getSchoolId())
+            .setStudentId(student.getStudentId())
+            .build();
     }
 
     private static Uni<StudentInfo> prepareStudentInfoUni(Student student, ResultReadResponse resultRes) {

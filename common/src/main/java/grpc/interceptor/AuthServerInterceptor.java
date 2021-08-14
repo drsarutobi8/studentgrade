@@ -56,7 +56,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             log.info("preparing auth key");
             String authKey = bearerAuthKey.substring(Constants.BEARER_TYPE.length()).trim();
             try {
-                AccessToken accessToken = validateReceivedAuthorizationKey(authKey);
+                AccessToken accessToken = authenticateAuthorizationKey(authKey);
                 if (accessToken!=null) {
                     if (accessToken.isExpired()) {
                         status = Status.DEADLINE_EXCEEDED.withDescription("token is already expired.");
@@ -119,17 +119,20 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
 
     }
 
-    @ConfigProperty(name = "realm.prefix")
+    @ConfigProperty(name="realm.prefix")
     String realmPrefix;
+
+    @ConfigProperty(name="realm.clientId")
+    String realmClientId;
 
     /**
      * According to https://stackoverflow.com/questions/48274251/keycloak-access-token-validation-end-point
      * Access http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
      * @param authKey
      */
-    private AccessToken validateReceivedAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {
+    private AccessToken authenticateAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {
         log.info("start validateReceivedAuthorizationKey authKey=".concat(authKey));
-        String serverUrl = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.auth-server-url", String.class).orElse("http://localhost:8180/auth/realms/studentgrade-realm");
+        String oidcServerUrl = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.auth-server-url", String.class).orElse("http://localhost:8180/auth/realms/studentgrade-realm");
 
         AccessToken token = TokenVerifier.create(authKey, AccessToken.class).getToken();
         if (token==null) {
@@ -141,7 +144,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
         if (token.getIssuedFor()==null) {
             throw new AuthServerInterceptorException("AccessToken does not have IssuedFor.");
         }//if
-        if (!token.getIssuedFor().equals("studentgrade-service")) {
+        if (!token.getIssuedFor().equals(realmClientId)) {
             throw new AuthServerInterceptorException("AccessToken has invalid IssuedFor.");
         }//if
         if (token.getType()==null) {
@@ -151,13 +154,19 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
             throw new AuthServerInterceptorException("AccessToken has invalid Type.");
         }//if
 
+        int prefixRealmPos  = token.getIssuer().indexOf(realmPrefix);
+
+        String oidcServerUrlPrefix = oidcServerUrl.substring(0,prefixRealmPos);
+        String tokenIssuerPrefix = token.getIssuer().substring(0, prefixRealmPos);
+        if (!oidcServerUrlPrefix.equals(tokenIssuerPrefix)) {
+            throw new AuthServerInterceptorException("AccessToken has invalid Issuer.");
+        }//if
+
         String realmName = getRealmName(token);
         log.debug("realmName=".concat(realmName));
 
         String userInfoPath = ConfigProvider.getConfig().getOptionalValue("quarkus.oidc.user-info-path", String.class).orElse("/protocol/openid-connect/userinfo");
-
-        int prefixRealmPos  = token.getIssuer().indexOf(realmPrefix);
-        String authURL = serverUrl.substring(0,prefixRealmPos).concat(realmName).concat(userInfoPath);
+        String authURL = oidcServerUrlPrefix.concat(realmName).concat(userInfoPath);
 
         log.debug("authURL=".concat(authURL));
         Response response = given().auth().oauth2(authKey)

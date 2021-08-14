@@ -6,6 +6,9 @@ public class TenantValidator {
             if (iTenantValue==null) {
                 throw new IllegalArgumentException("iTenantValue cannot be null.");
             }//if
+            if (iTenantValue.getTenantId()==null || iTenantValue.getTenantId().trim().length()==0) {
+                throw new InvalidTenantException(validTenantId, "<MISSING TENANT_ID>");
+            }//if
             if (!validTenantId.equals(iTenantValue.getTenantId())) {
                 throw new InvalidTenantException(validTenantId, iTenantValue.getTenantId());
             }//if
