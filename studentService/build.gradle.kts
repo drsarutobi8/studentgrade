@@ -36,7 +36,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":studentApi"))
     implementation(project(":resultApi"))
-    implementation(project(":resultService"))
+ //   implementation(project(":resultService"))
 
     compileOnly("org.projectlombok:lombok:1.18.20")
 
@@ -44,6 +44,8 @@ dependencies {
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
     implementation("io.quarkus:quarkus-hibernate-validator")
+    implementation("io.quarkus:quarkus-jackson")
+    implementation("io.quarkus:quarkus-kafka-streams")
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-reactive-mysql-client")
