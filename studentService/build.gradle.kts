@@ -36,8 +36,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":studentApi"))
     implementation(project(":resultApi"))
- //   implementation(project(":resultService"))
-
+ 
     compileOnly("org.projectlombok:lombok:1.18.20")
 
     implementation(enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"))
@@ -45,7 +44,6 @@ dependencies {
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
     implementation("io.quarkus:quarkus-hibernate-validator")
     implementation("io.quarkus:quarkus-jackson")
-    implementation("io.quarkus:quarkus-kafka-streams")
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-reactive-mysql-client")
@@ -53,6 +51,7 @@ dependencies {
     implementation("io.quarkus:quarkus-resteasy-mutiny")
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
     implementation("io.quarkus:quarkus-security")
+    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("io.rest-assured:rest-assured")
     
     testImplementation("io.quarkus:quarkus-junit5")
