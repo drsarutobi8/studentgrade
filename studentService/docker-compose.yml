@@ -26,7 +26,7 @@ services:
     environment:
       - "KEYCLOAK_USER=admin"
       - "KEYCLOAK_PASSWORD=admin"
-      - "KEYCLOAK_IMPORT=/deployment/keycloak-realm.json"
+      - "KEYCLOAK_IMPORT=/deployment/studentgrade-abc.json,/deployment/studentgrade-xyz.json"
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8180/auth"]
