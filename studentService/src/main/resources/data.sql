@@ -6,3 +6,11 @@ INSERT INTO student(schoolId, studentId, name, age, gender) VALUES ('abc', 'st5'
 INSERT INTO student(schoolId, studentId, name, age, gender) VALUES ('xyz', 'st1', 'Mike',17,'MALE');
 INSERT INTO student(schoolId, studentId, name, age, gender) VALUES ('xyz', 'st2', 'Janine',16,'FEMALE');
 INSERT INTO student(schoolId, studentId, name, age, gender) VALUES ('xyz', 'st3', 'Aaron',17,'MALE');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('abc', 'st1', 'PASS','FAIL','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('abc', 'st2', 'PASS','PASS','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('abc', 'st3', 'FAIL','FAIL','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('abc', 'st4', 'FAIL','PASS','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('abc', 'st5', 'FAIL','FAIL','FAIL');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('xyz', 'st1', 'PASS','PASS','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('xyz', 'st2', 'PASS','PASS','PASS');
+-- INSERT INTO result(schoolId, studentId, maths, art, chemistry) VALUES ('xyz', 'st3', 'FAIL','FAIL','FAIL');

@@ -23,11 +23,11 @@ message StudentInfoResponse{
   Grade chemistry = 8;
 }
 
-// message StudentInfoListAllRequest {
-// }
-// message StudentInfoListResponse {
-//   repeated StudentInfoResponse studentsInfo=1;
-// }
+message StudentInfoListAllRequest {
+}
+message StudentInfoListResponse {
+  repeated StudentInfoResponse studentsInfo=1;
+}
 
 message StudentCreateRequest{
   string school_id = 1;
@@ -95,7 +95,7 @@ enum Gender{
 // Now let's define our service
 service StudentService{
   rpc getInfo(StudentInfoRequest) returns (StudentInfoResponse);
-  //rpc listAllInfo(StudentInfoListAllRequest) returns (StudentInfoListResponse);
+  rpc listAllInfo(StudentInfoListAllRequest) returns (StudentInfoListResponse);
 
   rpc create(StudentCreateRequest) returns (StudentCreateResponse);
   rpc read(StudentReadRequest) returns (StudentReadResponse);

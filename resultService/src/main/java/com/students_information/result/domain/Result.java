@@ -22,6 +22,8 @@ import lombok.ToString;
 @IdClass(StudentPK.class)
 public class Result implements ITenantValue {
 
+    private transient StudentPK pk;
+
     @Id
     String schoolId;
     @Id
@@ -35,4 +37,12 @@ public class Result implements ITenantValue {
     public String getTenantId() {
         return schoolId;
     }
+
+    public StudentPK getPK() {
+        if (pk==null) {
+            pk = new StudentPK(schoolId, studentId);
+        }//if
+        return pk;
+    }
+
 }

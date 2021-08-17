@@ -46,7 +46,7 @@ docker logs cc730644109a -f
 * Add user 'st1' (John Doe) with password 'st1' (with disabling temporary password) 
 * Assign realm role 'user' and client role 'student'
 
-*** REPLACE 30337997-8519-4eb7-928d-1322fba687c5 with YOUR CLIENT SECRET ***
+*** REPLACE YOUR CLIENT SECRET ***
 
 
 # To Test
@@ -58,7 +58,7 @@ docker logs cc730644109a -f
 * Run below command to get access token
 ```
 export access_token=$(
-curl -X POST http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:6dc9fd34-d65c-40aa-9a5f-8947ef7294c8  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
+curl -X POST http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:98ce4b7d-9d37-4462-9150-680c4c1e6dc2  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
 );
 echo $access_token;
 curl -X POST \
