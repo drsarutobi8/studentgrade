@@ -43,7 +43,7 @@ dependencies {
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-security")
-//    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
+    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("io.rest-assured:rest-assured")
 
     runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")

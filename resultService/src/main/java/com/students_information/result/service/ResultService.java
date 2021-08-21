@@ -5,6 +5,11 @@ import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
 import com.students_information.common.value.StudentPK;
 
+import com.students_information.result.dao.ResultDao;
+import com.students_information.result.domain.Result;
+
+import org.hibernate.service.spi.InjectService;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -13,14 +18,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.students_information.result.dao.ResultDao;
-import com.students_information.result.domain.Result;
-
 import lombok.extern.slf4j.Slf4j;
-
-//import org.eclipse.microprofile.reactive.messaging.Channel;
-//import org.eclipse.microprofile.reactive.messaging.Emitter;
-//import org.eclipse.microprofile.reactive.messaging.Message;
 
 @ApplicationScoped
 @Slf4j
@@ -32,26 +30,16 @@ public class ResultService {
     @Inject
     BearerAuthHolder authHolder;
 
-//    @Inject @Channel("out-grades") Emitter<Result> resultEmitter;
-    
     @Transactional
-    public Result create(Result result) throws InvalidTenantException {
-        log.info("creating studentId=".concat(result.getStudentId()));
+    public Result create(Result creating) throws InvalidTenantException {
+        log.info("creating studentPK=".concat(creating.getPK().toString()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), result);
+            TenantValidator.validate(authHolder.getTenantId(), creating);
         }//if
-        resultDao.persist(result);
-        // resultEmitter.send(Message.of(result)
-        //     .withAck(() -> {
-        //         // Called when the message is acked
-        //         return CompletableFuture.completedFuture(null);
-        //     })
-        //     .withNack(throwable -> {
-        //         // Called when the message is nacked
-        //         return CompletableFuture.completedFuture(null);
-        //     }));
-        return result;
+
+        resultDao.persist(creating);
+        return creating;
     }
 
     @Transactional
@@ -65,23 +53,24 @@ public class ResultService {
     }
 
     @Transactional
-    public Result update(Result result) throws InvalidTenantException {
-        log.info("updating studentId=".concat(result.getStudentId()));
+    public Result update(Result updating) throws InvalidTenantException {
+        log.info("updating studentPK=".concat(updating.getPK().toString()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), result);
+            TenantValidator.validate(authHolder.getTenantId(), updating);
         }//if
 
-        Result updatingResult = resultDao.findBySchoolIdStudentId(authHolder.getTenantId(),result.getStudentId());
+        Result updatingResult = resultDao.findBySchoolIdStudentId(authHolder.getTenantId(),updating.getStudentId());
         if (updatingResult==null) {
-            throw new NoSuchElementException("Unknown Result with studentId=".concat(result.getStudentId()));
+            throw new NoSuchElementException("Unknown Result with studentId=".concat(updating.getStudentId()));
         }//if
         else {
-            updatingResult.setArt(result.getArt());
-            updatingResult.setChemistry(result.getChemistry());
-            updatingResult.setMaths(result.getMaths());
+            updatingResult.setArt(updating.getArt());
+            updatingResult.setChemistry(updating.getChemistry());
+            updatingResult.setMaths(updating.getMaths());
             resultDao.persist(updatingResult);
         }//else
+
         return updatingResult;
     }
 

@@ -58,7 +58,7 @@ docker logs cc730644109a -f
 * Run below command to get access token
 ```
 export access_token=$(
-curl -X POST http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:98ce4b7d-9d37-4462-9150-680c4c1e6dc2  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token' 
+curl -X POST http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:ea92ff27-0da7-4f71-aff2-63786c394033  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token'
 );
 echo $access_token;
 curl -X POST \

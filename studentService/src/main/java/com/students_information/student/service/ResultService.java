@@ -15,11 +15,13 @@ import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
 import com.students_information.common.value.StudentPK;
 import com.students_information.student.dao.ResultDao;
+import com.students_information.student.dao.StudentDao;
 import com.students_information.student.domain.Result;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 @ApplicationScoped
 @Slf4j
@@ -31,15 +33,23 @@ public class ResultService {
     @Inject
     ResultDao resultDao;
 
-    public Uni<Result> create(@Valid Result student) throws InvalidTenantException {
-        log.info("creating studentId=".concat(student.getStudentId()));
+    @Inject
+    StudentDao studentDao;
+
+    @Incoming("in-grades")
+    public Uni<Result> create(@Valid Result result) throws InvalidTenantException {
+        log.info("creating result studentId=".concat(result.getStudentId()));
 
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), student);
+            TenantValidator.validate(authHolder.getTenantId(), result);
         }//if
 
-        return Panache.withTransaction(() -> resultDao.persist(student));
+        return Panache.withTransaction(() -> 
+                        studentDao.findBySchoolIdStudentId(result.getSchoolId(),result.getStudentId())
+                                .onItem().ifNotNull().transformToUni(student -> resultDao.persist(result))
+                                .onItem().ifNull().failWith(new NoSuchElementException("Unknown Student with studentPK=".concat(result.getPK().toString())))
+                );
     }
 
     public Uni<Result> read(StudentPK studentPK) throws InvalidTenantException {
@@ -66,11 +76,13 @@ public class ResultService {
                                                             rs.setArt(result.getArt());
                                                             rs.setChemistry(result.getChemistry());
                                                             rs.setMaths(result.getMaths());
+                                                            resultDao.persist(rs);
                                                         })
-                                        )
-                                        .onItem()
-                                            .ifNull()
-                                                .failWith(new NoSuchElementException("Unknown Student with studentPK=".concat(result.getPK().toString())));
+                                            .onItem()
+                                                .ifNull()
+                                                    .failWith(
+                                                        new NoSuchElementException("Unknown Student with studentPK=".concat(result.getPK().toString()))
+                                                    ));
     }
 
     public Uni<Long> delete(StudentPK studentPK) throws InvalidTenantException {

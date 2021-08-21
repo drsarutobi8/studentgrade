@@ -5,7 +5,10 @@ import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
+import com.students_information.common.tenant.InvalidTenantException;
+import com.students_information.common.value.StudentPK;
 import com.students_information.result.domain.Result;
+import com.students_information.result.service.ResultController;
 import com.students_information.result.service.ResultService;
 import com.students_information.result.stubs.Grade;
 import com.students_information.result.stubs.ResultCreateRequest;
@@ -25,8 +28,6 @@ import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import lombok.extern.slf4j.Slf4j;
-import com.students_information.common.tenant.InvalidTenantException;
-import com.students_information.common.value.StudentPK;
 
 @GrpcService
 @Blocking
@@ -34,7 +35,13 @@ import com.students_information.common.value.StudentPK;
 public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
 
     @Inject
+    ResultController resultController;
+
+    @Inject
     ResultService resultService;
+
+    //@Inject 
+    //@Channel("out-grades") MutinyEmitter<Result> resultEmitter;
 
     @Override
     public void create(ResultCreateRequest request, StreamObserver<ResultCreateResponse> responseObserver) {
@@ -46,7 +53,8 @@ public class ResultServiceImpl extends ResultServiceGrpc.ResultServiceImplBase {
             creatingResult.setMaths(request.getMaths().toString());
             creatingResult.setSchoolId(request.getSchoolId());
             creatingResult.setStudentId(request.getStudentId());
-            Result result = resultService.create(creatingResult);
+            //Result result = resultService.create(creatingResult);
+            Result result = resultController.create(creatingResult);
             ResultCreateResponse resultResponse = ResultCreateResponse.newBuilder()
                                                 .setSchoolId(result.getSchoolId())
                                                 .setStudentId(result.getStudentId())
