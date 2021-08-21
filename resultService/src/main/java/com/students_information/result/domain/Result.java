@@ -3,6 +3,10 @@ package com.students_information.result.domain;
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -20,7 +24,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "result")
 @IdClass(StudentPK.class)
-public class Result implements ITenantValue {
+public class Result extends PanacheEntityBase implements ITenantValue {
 
     private transient StudentPK pk;
 
@@ -45,4 +49,24 @@ public class Result implements ITenantValue {
         return pk;
     }
 
+    public static Result findBySchoolIdStudentId(String schoolId, String studentId){
+        return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
+    }
+    public static long deleteBySchoolIdStudentId(String schoolId, String studentId) {
+        return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
+    }
+
+    public static List<Result> findBySchooldId(String schoolId) {
+        return find("schoolId", schoolId).list();
+    }
+    public static long deleteBySchoolId(String schoolId) {
+        return delete("schoolId", schoolId);
+    }
+
+    public static List<Result> findByStudentId(String studentId){
+        return find("studentId", studentId).list();
+    }
+    public static long deleteByStudentId(String studentId) {
+        return delete("studentId", studentId);
+    }
 }

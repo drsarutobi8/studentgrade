@@ -4,7 +4,6 @@ import com.students_information.common.grpc.interceptor.BearerAuthHolder;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
 import com.students_information.common.value.StudentPK;
-import com.students_information.student.dao.StudentDao;
 import com.students_information.student.domain.Student;
 
 import java.util.List;
@@ -25,9 +24,6 @@ public class StudentService {
     @Inject
     BearerAuthHolder authHolder;
 
-    @Inject
-    StudentDao studentDao;
-
     public Uni<Student> create(@Valid Student student) throws InvalidTenantException {
         log.info("creating studentId=".concat(student.getStudentId()));
 
@@ -36,7 +32,7 @@ public class StudentService {
             TenantValidator.validate(authHolder.getTenantId(), student);
         }//if
 
-        return Panache.withTransaction(() -> studentDao.persist(student));
+        return Panache.withTransaction(() -> student.persist());
     }
 
     public Uni<Student> read(StudentPK studentPK) throws InvalidTenantException {
@@ -45,7 +41,7 @@ public class StudentService {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
-        return studentDao.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        return Student.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
     public Uni<Student> update(@Valid Student student) throws InvalidTenantException {
@@ -56,13 +52,14 @@ public class StudentService {
             TenantValidator.validate(authHolder.getTenantId(), student);
         }//if
 
-        return Panache.withTransaction(() -> studentDao.findBySchoolIdStudentId(student.getSchoolId(), student.getStudentId())
+        return Panache.withTransaction(() -> Student.findBySchoolIdStudentId(student.getSchoolId(), student.getStudentId())
                                             .onItem()
                                                 .ifNotNull()
                                                     .invoke(st -> {
                                                             st.setAge(student.getAge());
                                                             st.setGender(student.getGender());
                                                             st.setName(student.getName());
+                                                            st.persist();
                                                         })
                                         )
                                         .onItem()
@@ -78,7 +75,7 @@ public class StudentService {
             TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
 
-        return Panache.withTransaction(() -> studentDao.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId()))
+        return Panache.withTransaction(() -> Student.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId()))
                                         .onItem()
                                             .ifNull()
                                                 .failWith(new NoSuchElementException("Unknown Student with studentId=".concat(studentPK.getStudentId())));
@@ -89,10 +86,10 @@ public class StudentService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             if (authHolder.getTenantId()!=null) {
-                return studentDao.findBySchooldId(authHolder.getTenantId());
+                return Student.findBySchooldId(authHolder.getTenantId());
             }//if
         }//if
-        return studentDao.listAll();
+        return Student.listAll();
     }
 
 }

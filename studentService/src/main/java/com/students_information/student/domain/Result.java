@@ -1,5 +1,6 @@
 package com.students_information.student.domain;
 
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -12,6 +13,9 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
+
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
+import io.smallrye.mutiny.Uni;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +30,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "result")
 @IdClass(StudentPK.class)
-public class Result implements ITenantValue {
+public class Result extends PanacheEntityBase implements ITenantValue {
 
     @Transient
     private StudentPK pk;
@@ -62,4 +66,24 @@ public class Result implements ITenantValue {
         return pk;
     }
 
+    public static Uni<Result> findBySchoolIdStudentId(String schoolId, String studentId){
+        return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
+    }
+    public static Uni<Long> deleteBySchoolIdStudentId(String schoolId, String studentId) {
+        return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
+    }
+
+    public static Uni<List<Result>> findBySchooldId(String schoolId) {
+        return find("schoolId", schoolId).list();
+    }
+    public static Uni<Long> deleteBySchoolId(String schoolId) {
+        return delete("schoolId", schoolId);
+    }
+
+    public static Uni<List<Result>> findByStudentId(String studentId){
+        return find("studentId", studentId).list();
+    }
+    public static Uni<Long> deleteByStudentId(String studentId) {
+        return delete("studentId", studentId);
+    }
 }

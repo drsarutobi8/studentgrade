@@ -5,7 +5,6 @@ import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
 import com.students_information.common.value.StudentPK;
 
-import com.students_information.result.dao.ResultDao;
 import com.students_information.result.domain.Result;
 
 import org.hibernate.service.spi.InjectService;
@@ -25,9 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultService {
 
     @Inject
-    ResultDao resultDao;
-
-    @Inject
     BearerAuthHolder authHolder;
 
     @Transactional
@@ -38,7 +34,7 @@ public class ResultService {
             TenantValidator.validate(authHolder.getTenantId(), creating);
         }//if
 
-        resultDao.persist(creating);
+        creating.persist();
         return creating;
     }
 
@@ -49,7 +45,7 @@ public class ResultService {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
-        return resultDao.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        return Result.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
     @Transactional
@@ -60,7 +56,7 @@ public class ResultService {
             TenantValidator.validate(authHolder.getTenantId(), updating);
         }//if
 
-        Result updatingResult = resultDao.findBySchoolIdStudentId(authHolder.getTenantId(),updating.getStudentId());
+        Result updatingResult = Result.findBySchoolIdStudentId(authHolder.getTenantId(),updating.getStudentId());
         if (updatingResult==null) {
             throw new NoSuchElementException("Unknown Result with studentId=".concat(updating.getStudentId()));
         }//if
@@ -68,7 +64,7 @@ public class ResultService {
             updatingResult.setArt(updating.getArt());
             updatingResult.setChemistry(updating.getChemistry());
             updatingResult.setMaths(updating.getMaths());
-            resultDao.persist(updatingResult);
+            updatingResult.persist();
         }//else
 
         return updatingResult;
@@ -81,7 +77,7 @@ public class ResultService {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), studentPK);    
         }//if
-        return resultDao.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        return Result.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
     @Transactional
@@ -89,9 +85,9 @@ public class ResultService {
         log.info("listing All");
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            return resultDao.findBySchooldId(authHolder.getTenantId());
+            return Result.findBySchooldId(authHolder.getTenantId());
         }//if
-        List<Result> resultList = resultDao.listAll();
+        List<Result> resultList = Result.listAll();
         return resultList;
     }
 
