@@ -53,7 +53,9 @@ dependencies {
     implementation("io.quarkus:quarkus-security")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("io.rest-assured:rest-assured")
-    
+
+    implementation("com.google.protobuf:protobuf-java-util")
+
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.assertj:assertj-core")

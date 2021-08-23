@@ -46,6 +46,8 @@ dependencies {
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("io.rest-assured:rest-assured")
 
+    implementation("com.google.protobuf:protobuf-java-util")
+
     runtimeOnly("io.quarkus:quarkus-hibernate-orm-deployment")
 
     testImplementation("io.quarkus:quarkus-junit5")

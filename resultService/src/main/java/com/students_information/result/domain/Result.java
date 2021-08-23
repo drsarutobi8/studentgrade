@@ -1,17 +1,17 @@
 package com.students_information.result.domain;
 
+import java.sql.Timestamp;
+import java.util.List;
+
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-
-import java.util.List;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,6 +36,12 @@ public class Result extends PanacheEntityBase implements ITenantValue {
     String maths;
     String art;
     String chemistry;
+
+    String createId;
+    Timestamp createTime;
+
+    String updateId;
+    Timestamp updateTime;
 
     @Override
     public String getTenantId() {

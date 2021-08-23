@@ -3,12 +3,14 @@ package com.students_information.result.service;
 import com.students_information.common.grpc.interceptor.BearerAuthHolder;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
+import com.students_information.common.value.DeletedEntity;
 import com.students_information.common.value.StudentPK;
 
 import com.students_information.result.domain.Result;
-
 import org.hibernate.service.spi.InjectService;
+import org.hibernate.sql.Delete;
 
+import java.sql.Timestamp;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,7 +34,11 @@ public class ResultService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), creating);
+
+            //FORCE USING CREATE USER ID FROM TOKEN
+            creating.setCreateId(authHolder.getAccessToken().getPreferredUsername());
         }//if
+        creating.setCreateTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
         creating.persist();
         return creating;
@@ -54,7 +60,10 @@ public class ResultService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), updating);
+            //FORCE USING CREATE USER ID FROM TOKEN
+            updating.setUpdateId(authHolder.getAccessToken().getPreferredUsername());
         }//if
+        updating.setUpdateTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
         Result updatingResult = Result.findBySchoolIdStudentId(authHolder.getTenantId(),updating.getStudentId());
         if (updatingResult==null) {
@@ -71,13 +80,18 @@ public class ResultService {
     }
 
     @Transactional
-    public long delete(StudentPK studentPK) throws InvalidTenantException {
+    public DeletedEntity delete(StudentPK studentPK) throws InvalidTenantException {
         log.info("deleting studentId=".concat(studentPK.getStudentId()));
+        DeletedEntity deleted = new DeletedEntity();
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), studentPK);    
+            TenantValidator.validate(authHolder.getTenantId(), studentPK);
+            deleted.setDeleteId(authHolder.getAccessToken().getPreferredUsername());
         }//if
-        return Result.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        deleted.setDeleteTime(new Timestamp(System.currentTimeMillis()));
+        long deletedCount = Result.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        deleted.setDeletedCount(deletedCount);
+        return deleted;
     }
 
     @Transactional

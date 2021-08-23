@@ -1,6 +1,7 @@
 package com.students_information.student.domain;
 
 import java.util.List;
+import java.sql.Timestamp;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -43,6 +44,9 @@ public class Result extends PanacheEntityBase implements ITenantValue {
     String maths;
     String art;
     String chemistry;
+
+    String createId;
+    Timestamp createTime;
 
     @OneToOne
     @JoinColumns({

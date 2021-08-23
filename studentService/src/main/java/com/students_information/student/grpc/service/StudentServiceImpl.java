@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 //@RolesAllowed({"student","teacher"})
 @Slf4j
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
-    //Mutiny.Session session;
 
     @Inject
     StudentService studentService;

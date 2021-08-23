@@ -20,7 +20,6 @@ import com.students_information.student.domain.Student;
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 @ApplicationScoped
 @Slf4j
@@ -29,21 +28,10 @@ public class ResultService {
     @Inject
     BearerAuthHolder authHolder;
 
-    @Incoming("in-grades")
-    public Uni<Result> create(@Valid Result result) throws InvalidTenantException {
-        log.info("creating result studentId=".concat(result.getStudentId()));
-
-        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
-            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), result);
-        }//if
-
+    Uni<Result> create(@Valid Result result) {
+        log.info("creating result schooldId=".concat(result.getSchoolId())
+                .concat(" studentId=").concat(result.getStudentId()));
         return Panache.withTransaction(result::persist);
-    //    return Panache.withTransaction(() -> 
-    //                    Student.findBySchoolIdStudentId(result.getSchoolId(),result.getStudentId())
-    //                            .onItem().ifNotNull().transformToUni(student -> result.persist())
-    //                            .onItem().ifNull().failWith(new NoSuchElementException("Unknown Student with studentPK=".concat(result.getPK().toString())))
-    //            );
      }
 
     public Uni<Result> read(StudentPK studentPK) throws InvalidTenantException {
@@ -55,14 +43,9 @@ public class ResultService {
         return Result.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
     }
 
-    public Uni<Result> update(@Valid Result result) throws InvalidTenantException {
-        log.info("updating schoolId=".concat(result.getSchoolId()));
-        log.info("updating studentId=".concat(result.getStudentId()));
-        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
-            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), result);
-        }//if
-
+    Uni<Result> update(@Valid Result result) {
+        log.info("updating result schooldId=".concat(result.getSchoolId())
+            .concat(" studentId=").concat(result.getStudentId()));
         return Panache.withTransaction(()-> Result.findBySchoolIdStudentId(result.getSchoolId(), result.getStudentId())
                                             .onItem()
                                                 .ifNotNull()
@@ -79,13 +62,9 @@ public class ResultService {
                                                     ));
     }
 
-    public Uni<Long> delete(StudentPK studentPK) throws InvalidTenantException {
-        log.info("deleting schoolId=".concat(studentPK.getSchoolId()));
-        log.info("deleting studentId=".concat(studentPK.getStudentId()));
-        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
-            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), studentPK);
-        }//if
+    Uni<Long> delete(StudentPK studentPK) {
+        log.info("deleting result schooldId=".concat(studentPK.getSchoolId())
+        .concat(" studentId=").concat(studentPK.getStudentId()));
 
         return Panache.withTransaction(()-> Result.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId()))
                                             .onItem()
