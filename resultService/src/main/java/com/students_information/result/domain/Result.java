@@ -55,12 +55,12 @@ public class Result extends PanacheEntityBase implements ITenantValue {
         return pk;
     }
 
-    public static Result findBySchoolIdStudentId(String schoolId, String studentId){
-        return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
-    }
-    public static long deleteBySchoolIdStudentId(String schoolId, String studentId) {
-        return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
-    }
+    // public static Result findBySchoolIdStudentId(String schoolId, String studentId){
+    //     return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
+    // }
+    // public static long deleteBySchoolIdStudentId(String schoolId, String studentId) {
+    //     return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
+    // }
 
     public static List<Result> findBySchooldId(String schoolId) {
         return find("schoolId", schoolId).list();

@@ -1,5 +1,7 @@
 package com.students_information.student.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
 
@@ -7,7 +9,11 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
@@ -15,6 +21,7 @@ import io.smallrye.mutiny.Uni;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -46,6 +53,16 @@ public class Student extends PanacheEntityBase implements ITenantValue{
     @NotBlank(message="Gender may not be blank")
     String gender;
 
+    @OneToOne
+    @ToString.Exclude
+	@EqualsAndHashCode.Exclude
+    @JsonIgnore
+    @JoinColumns({
+        @JoinColumn(name = "schoolId", referencedColumnName = "schoolId", nullable = false, insertable = false, updatable = false),
+        @JoinColumn(name = "studentId", referencedColumnName = "studentId", nullable = false, insertable = false, updatable = false)
+    })
+    Result result;
+    
     @Override
     public String getTenantId() {
         return schoolId;
@@ -58,12 +75,12 @@ public class Student extends PanacheEntityBase implements ITenantValue{
         return pk;
     }
 
-    public static Uni<Student> findBySchoolIdStudentId(String schoolId, String studentId){
-        return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
-    }
-    public static Uni<Long> deleteBySchoolIdStudentId(String schoolId, String studentId) {
-        return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
-    }
+    // public static Uni<Student> findBySchoolIdStudentId(String schoolId, String studentId){
+    //     return find("schoolId=?1 AND studentId=?2", schoolId, studentId).firstResult();
+    // }
+    // public static Uni<Long> deleteBySchoolIdStudentId(String schoolId, String studentId) {
+    //     return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
+    // }
 
     public static Uni<List<Student>> findBySchooldId(String schoolId) {
         return find("schoolId", schoolId).list();

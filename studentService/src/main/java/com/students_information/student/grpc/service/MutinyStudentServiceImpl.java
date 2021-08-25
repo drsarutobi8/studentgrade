@@ -281,12 +281,12 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
         log.info("start grpcService.delete studentId=".concat(studentId));
         StudentPK studentPK = new StudentPK(schoolId, studentId);
         try {
-            Uni<Long> deletedCountUni = studentService.delete(studentPK);
+            Uni<Boolean> deletedCountUni = studentService.delete(studentPK);
             Uni<StudentDeleteResponse> response = deletedCountUni
                                                     .onItem()
                                                         .transformToUni(deletedCount -> Uni.createFrom().item(
                                                             StudentDeleteResponse.newBuilder()
-                                                            .setDeletedCount(deletedCount)
+                                                            .setDeletedCount((deletedCount)?1:0)
                                                             .build()
                                                         )
                                                     .onFailure()

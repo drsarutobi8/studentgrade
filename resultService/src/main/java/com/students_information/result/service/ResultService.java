@@ -46,33 +46,34 @@ public class ResultService {
 
     @Transactional
     public Result read(StudentPK studentPK) throws InvalidTenantException {
-        log.info("reading studentId=".concat(studentPK.getSchoolId()));
+        log.info("reading studentPK=".concat(studentPK.toString()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), studentPK);
         }//if
-        return Result.findBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
+        return Result.findById(studentPK);
     }
 
     @Transactional
     public Result update(Result updating) throws InvalidTenantException {
         log.info("updating studentPK=".concat(updating.getPK().toString()));
-        if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
-            log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), updating);
-            //FORCE USING CREATE USER ID FROM TOKEN
-            updating.setUpdateId(authHolder.getAccessToken().getPreferredUsername());
-        }//if
-        updating.setUpdateTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
-        Result updatingResult = Result.findBySchoolIdStudentId(authHolder.getTenantId(),updating.getStudentId());
+        StudentPK studentPK = new StudentPK(authHolder.getTenantId(),updating.getStudentId());
+        Result updatingResult = Result.findById(studentPK);
         if (updatingResult==null) {
             throw new NoSuchElementException("Unknown Result with studentId=".concat(updating.getStudentId()));
         }//if
         else {
+            if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
+                log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+                TenantValidator.validate(authHolder.getTenantId(), updating);
+                //FORCE USING CREATE USER ID FROM TOKEN
+                updatingResult.setUpdateId(authHolder.getAccessToken().getPreferredUsername());
+            }//if
             updatingResult.setArt(updating.getArt());
             updatingResult.setChemistry(updating.getChemistry());
             updatingResult.setMaths(updating.getMaths());
+            updatingResult.setUpdateTime(new java.sql.Timestamp(System.currentTimeMillis()));
             updatingResult.persist();
         }//else
 
@@ -81,17 +82,20 @@ public class ResultService {
 
     @Transactional
     public DeletedEntity delete(StudentPK studentPK) throws InvalidTenantException {
-        log.info("deleting studentId=".concat(studentPK.getStudentId()));
-        DeletedEntity deleted = new DeletedEntity();
+        log.info("deleting studentPK=".concat(studentPK.toString()));
+        DeletedEntity deletedEntity = new DeletedEntity();
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), studentPK);
-            deleted.setDeleteId(authHolder.getAccessToken().getPreferredUsername());
+            deletedEntity.setDeleteId(authHolder.getAccessToken().getPreferredUsername());
         }//if
-        deleted.setDeleteTime(new Timestamp(System.currentTimeMillis()));
-        long deletedCount = Result.deleteBySchoolIdStudentId(studentPK.getSchoolId(), studentPK.getStudentId());
-        deleted.setDeletedCount(deletedCount);
-        return deleted;
+        deletedEntity.setDeleteTime(new Timestamp(System.currentTimeMillis()));
+        boolean deleted = Result.deleteById(studentPK);
+        if (!deleted) {
+            throw new IllegalStateException("Cannot delete studentPK=".concat(studentPK.toString()));
+        }//if
+        deletedEntity.setDeletedCount(1l);
+        return deletedEntity;
     }
 
     @Transactional
