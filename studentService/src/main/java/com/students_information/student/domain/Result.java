@@ -68,7 +68,7 @@ public class Result extends PanacheEntityBase implements ITenantValue {
         return pk;
     }
 
-    public static Uni<List<Result>> findBySchooldId(String schoolId) {
+    public static Uni<List<Result>> findBySchoolId(String schoolId) {
         return find("schoolId", schoolId).list();
     }
     public static Uni<Long> deleteBySchoolId(String schoolId) {

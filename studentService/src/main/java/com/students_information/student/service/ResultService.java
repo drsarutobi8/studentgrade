@@ -31,7 +31,7 @@ public class ResultService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             if (authHolder.getTenantId()!=null) {
-                return Result.findBySchooldId(authHolder.getTenantId());
+                return Result.findBySchoolId(authHolder.getTenantId());
             }//if
         }//if
         return Result.listAll();

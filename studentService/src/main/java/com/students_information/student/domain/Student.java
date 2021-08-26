@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
 
+import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -52,6 +53,12 @@ public class Student extends PanacheEntityBase implements ITenantValue{
     
     @NotBlank(message="Gender may not be blank")
     String gender;
+
+    String createId;
+    Timestamp createTime;
+
+    String updateId;
+    Timestamp updateTime;
 
     @OneToOne
     @ToString.Exclude

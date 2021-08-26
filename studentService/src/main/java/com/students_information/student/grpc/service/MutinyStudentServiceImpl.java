@@ -14,6 +14,7 @@ import com.students_information.student.domain.Result;
 import com.students_information.student.domain.Student;
 import com.students_information.student.service.ResultService;
 import com.students_information.student.service.StudentService;
+import com.students_information.student.grpc.controller.StudentController;
 import com.students_information.student.stubs.Gender;
 import com.students_information.student.stubs.Grade;
 import com.students_information.student.stubs.MutinyStudentServiceGrpc;
@@ -46,6 +47,8 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     StudentService studentService;
     @Inject
     ResultService resultService;
+    @Inject
+    StudentController studentController;
 
     @GrpcClient("result")
     MutinyResultServiceGrpc.MutinyResultServiceStub resultClient;
@@ -180,124 +183,48 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
 
     @Override
     public Uni<StudentCreateResponse> create(StudentCreateRequest request) {
-        String studentId = request.getStudentId();
-        log.info("start grpcService.create studentId=".concat(studentId));
-        Student newStudent = new Student();
-        newStudent.setAge(request.getAge());
-        newStudent.setGender(request.getGender().toString());
-        newStudent.setName(request.getName());
-        newStudent.setSchoolId(request.getSchoolId());
-        newStudent.setStudentId(request.getStudentId());
-        Uni<Student> studentUni;
+        log.info("start grpcService.create schoolId=".concat(request.getSchoolId()).concat(" studentId=").concat(request.getStudentId()));
         try {
-            studentUni = studentService.create(newStudent);
-            Uni<StudentCreateResponse> response = studentUni
-                                                    .onItem()
-                                                        .transformToUni(student -> Uni.createFrom().item(
-                                                            StudentCreateResponse.newBuilder()
-                                                            .setSchoolId(student.getSchoolId())
-                                                            .setStudentId(student.getStudentId())
-                                                            .build()
-                                                        )
-                                                    .onFailure()
-                                                        .recoverWithItem(StudentCreateResponse.newBuilder().build()));
-            return response;
+            return studentController.create(request);
         }//try
         catch (InvalidTenantException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Uni.createFrom().item(StudentCreateResponse.newBuilder().build());
-        }//catch
+        }//catch    
     }
 
     @Override
     public Uni<StudentReadResponse> read(StudentReadRequest request) {
-        String schoolId = request.getSchoolId();
-        String studentId = request.getStudentId();
-        log.info("start grpcService.read studentId=".concat(studentId));
-        StudentPK studentPK = new StudentPK(schoolId, studentId);
-        Uni<Student> studentUni;
+        log.info("start grpcService.read schoolId=".concat(request.getSchoolId()).concat(" studentId=").concat(request.getStudentId()));
         try {
-            studentUni = studentService.read(studentPK);
-            Uni<StudentReadResponse> response = studentUni
-            .onItem()
-                .ifNotNull()
-                    .transformToUni(student -> Uni.createFrom().item(
-                        StudentReadResponse.newBuilder()
-                        .setSchoolId(student.getSchoolId())
-                        .setStudentId(student.getStudentId())
-                        .setName(student.getName())
-                        .setAge(student.getAge())
-                        .setGender(Gender.valueOf(student.getGender()))
-                        .build()
-                    )
-            .onItem()
-                .ifNull()
-                    .continueWith(StudentReadResponse.newBuilder().build())
-            .onFailure()
-                .recoverWithItem(StudentReadResponse.newBuilder().build()));
-            return response;
+            return studentController.read(request);
         }//try
         catch (InvalidTenantException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Uni.createFrom().item(StudentReadResponse.newBuilder().build());
         }//catch
     }
 
     @Override
     public Uni<StudentUpdateResponse> update(StudentUpdateRequest request) {
-        String schoolId = request.getSchoolId();
-        String studentId = request.getStudentId();
-        log.info("start grpcService.update studentId=".concat(studentId));
-        Student updatingStudent = new Student();
-        updatingStudent.setAge(request.getAge());
-        updatingStudent.setGender(request.getGender().toString());
-        updatingStudent.setName(request.getName());
-        updatingStudent.setSchoolId(schoolId);
-        updatingStudent.setStudentId(studentId);
+        log.info("start grpcService.update schoolId=".concat(request.getSchoolId()).concat(" studentId=").concat(request.getStudentId()));
         try {
-            Uni<Student> studentUni = studentService.update(updatingStudent);
-            Uni<StudentUpdateResponse> response = studentUni
-            .onItem()
-                .transformToUni(student -> Uni.createFrom().item(
-                    StudentUpdateResponse.newBuilder()
-                    .setSchoolId(student.getSchoolId())
-                    .setStudentId(student.getStudentId())
-                    .build()
-                )
-            .onFailure()
-                .recoverWithItem(StudentUpdateResponse.newBuilder().build()));
-            return response;
+            return studentController.update(request);
         }//try
         catch (InvalidTenantException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Uni.createFrom().item(StudentUpdateResponse.newBuilder().build());
         }//catch
     }
 
     @Override
     public Uni<StudentDeleteResponse> delete(StudentDeleteRequest request) {
-        String schoolId = request.getSchoolId();
-        String studentId = request.getStudentId();
-        log.info("start grpcService.delete studentId=".concat(studentId));
-        StudentPK studentPK = new StudentPK(schoolId, studentId);
+        log.info("start grpcService.delete schoolId=".concat(request.getSchoolId()).concat(" studentId=").concat(request.getStudentId()));
         try {
-            Uni<Boolean> deletedCountUni = studentService.delete(studentPK);
-            Uni<StudentDeleteResponse> response = deletedCountUni
-                                                    .onItem()
-                                                        .transformToUni(deletedCount -> Uni.createFrom().item(
-                                                            StudentDeleteResponse.newBuilder()
-                                                            .setDeletedCount((deletedCount)?1:0)
-                                                            .build()
-                                                        )
-                                                    .onFailure()
-                                                        .recoverWithItem(StudentDeleteResponse.newBuilder()
-                                                                                                .setDeletedCount(0l)
-                                                                                                .build()
-                                                        ));
-            return response;
+            return studentController.delete(request);
         }//try
         catch (InvalidTenantException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return Uni.createFrom().item(StudentDeleteResponse.newBuilder().build());
         }//catch
     }
@@ -305,29 +232,6 @@ public class MutinyStudentServiceImpl extends MutinyStudentServiceGrpc.StudentSe
     @Override
     public Uni<StudentListResponse> listAll(StudentListAllRequest request) {
         log.info("start grpcService.listAll");    
-
-        Uni<List<Student>> studentsUni = studentService.listAll();
-        Uni<StudentListResponse> listReponseUni = studentsUni
-                                                        .onItem()
-                                                            .transformToUni(students -> prepareListResponse(students));
-
-        return listReponseUni;
-    }
-
-    private Uni<StudentListResponse> prepareListResponse(List<Student> students) {
-        StudentListResponse.Builder listReponseBuilder = StudentListResponse.newBuilder();
-        if (students!=null && !students.isEmpty()) {
-            students.stream().
-                forEach(student -> 
-                    listReponseBuilder.addStudents(StudentReadResponse.newBuilder()
-                        .setAge(student.getAge())
-                        .setGender(Gender.valueOf(student.getGender()))
-                        .setName(student.getName())
-                        .setSchoolId(student.getSchoolId())
-                        .setStudentId(student.getStudentId())
-                        .build())
-                );
-        }//if
-        return Uni.createFrom().item(listReponseBuilder.build());
+        return studentController.listAll(request);
     }
 }

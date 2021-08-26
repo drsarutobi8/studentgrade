@@ -43,6 +43,10 @@ message ResultReadResponse{
   Grade maths = 3;
   Grade art = 4;
   Grade chemistry = 5;
+  string create_id = 6;
+  google.protobuf.Timestamp create_time = 7;
+  string update_id = 8;
+  google.protobuf.Timestamp update_time = 9;
 }
 
 message ResultListAllRequest{

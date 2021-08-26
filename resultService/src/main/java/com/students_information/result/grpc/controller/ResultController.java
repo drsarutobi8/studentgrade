@@ -1,4 +1,4 @@
-package com.students_information.result.service;
+package com.students_information.result.grpc.controller;
 
 import com.google.protobuf.util.Timestamps;
 
@@ -11,6 +11,7 @@ import com.students_information.result.event.ResultCreated;
 import com.students_information.result.event.ResultDeleted;
 import com.students_information.result.event.ResultEvent;
 import com.students_information.result.event.ResultUpdated;
+import com.students_information.result.service.ResultService;
 import com.students_information.result.stubs.Grade;
 import com.students_information.result.stubs.ResultCreateRequest;
 import com.students_information.result.stubs.ResultCreateResponse;
@@ -82,8 +83,16 @@ public class ResultController {
                 .setChemistry(Grade.valueOf(result.getChemistry()))
                 .setMaths(Grade.valueOf(result.getMaths()))
                 .setSchoolId(result.getSchoolId())
-                .setStudentId(result.getStudentId());
-        }//if
+                .setStudentId(result.getStudentId())
+                .setCreateId(result.getCreateId())
+                .setUpdateId(result.getUpdateId());
+            if (result.getCreateTime()!=null) {
+                builder.setCreateTime(Timestamps.fromMillis(result.getCreateTime().getTime()));
+            }//if
+            if (result.getUpdateTime()!=null) {
+                builder.setUpdateTime(Timestamps.fromMillis(result.getUpdateTime().getTime()));
+            }//if
+        }//if    
         return builder.build();
     }
 
