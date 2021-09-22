@@ -56,6 +56,20 @@ public class Result extends PanacheEntityBase implements ITenantValue {
     @JsonIgnore
     Student student;
 
+    public void copy(Result other) {
+        setMaths(other.getMaths());
+        setArt(other.getArt());
+        setChemistry(other.getChemistry());
+    }
+
+    public void copyWithAuditTrail(Result other) {
+        copy(other);
+        setCreateId(other.getCreateId());
+        setCreateTime(other.getCreateTime());
+        setUpdateId(other.getUpdateId());
+        setUpdateTime(other.getUpdateTime());
+    }
+
     @Override
     public String getTenantId() {
         return schoolId;

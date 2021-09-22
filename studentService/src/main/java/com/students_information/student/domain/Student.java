@@ -8,6 +8,7 @@ import com.students_information.common.value.StudentPK;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.CascadeType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
@@ -60,7 +61,7 @@ public class Student extends PanacheEntityBase implements ITenantValue{
     String updateId;
     Timestamp updateTime;
 
-    @OneToOne
+    @OneToOne(cascade=CascadeType.ALL)
     @ToString.Exclude
 	@EqualsAndHashCode.Exclude
     @JsonIgnore
@@ -80,6 +81,20 @@ public class Student extends PanacheEntityBase implements ITenantValue{
             pk = new StudentPK(schoolId, studentId);
         }//if
         return pk;
+    }
+
+    public void copy(Student other) {
+        setAge(other.getAge());
+        setGender(other.getGender());
+        setName(other.getName());
+    }
+
+    public void copyWithAuditTrail(Student other) {
+        copy(other);
+        setCreateId(other.getCreateId());
+        setCreateTime(other.getCreateTime());
+        setUpdateId(other.getUpdateId());
+        setUpdateTime(other.getUpdateTime());
     }
 
     // public static Uni<Student> findBySchoolIdStudentId(String schoolId, String studentId){

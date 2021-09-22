@@ -29,7 +29,12 @@ public class StudentService {
 
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            log.info("by tenantId=".concat(authHolder.getTenantId()));
             TenantValidator.validate(authHolder.getTenantId(), student);
+
+            student.setCreateId(authHolder.getAccessToken().getPreferredUsername());
+            student.setCreateTime(new java.sql.Timestamp(System.currentTimeMillis()));
+            student.setSchoolId(authHolder.getTenantId());
         }//if
 
         return Panache.withTransaction(() -> student.persist());
@@ -49,19 +54,25 @@ public class StudentService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), student);
+
+            student.setUpdateId(authHolder.getAccessToken().getPreferredUsername());
+            student.setUpdateTime(new java.sql.Timestamp(System.currentTimeMillis()));
         }//if
 
         return Panache.withTransaction(() -> Student.findById(student.getPK())
                                             .onItem()
                                                 .ifNotNull()
-                                                    .invoke(stObj -> student.persist()
-                                                        // {
-                                                        //     Student st = (Student)stObj;
-                                                        //     st.setAge(student.getAge());
-                                                        //     st.setGender(student.getGender());
-                                                        //     st.setName(student.getName());
-                                                        //     st.persist();
-                                                        // }
+                                                    .invoke(stObj -> 
+                                                        {
+                                                             Student st = (Student)stObj;
+                                                             st.copy(student);
+                                                             //st.setAge(student.getAge());
+                                                             //st.setGender(student.getGender());
+                                                             //st.setName(student.getName());
+                                                             st.setUpdateId(student.getUpdateId());
+                                                             st.setUpdateTime(student.getUpdateTime());
+                                                             st.persist();
+                                                         }
                                                         )
                                         )
                                          .onItem()

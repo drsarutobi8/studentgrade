@@ -12,7 +12,7 @@ plugins {
     `maven-publish`
     id("io.quarkus")
     id("io.freefair.lombok") 
-    id("org.kordamp.gradle.jandex")
+//    id("org.kordamp.gradle.jandex")
     id("com.palantir.docker-compose")
 //    id("com.palantir.docker-run")
 }
@@ -44,11 +44,13 @@ dependencies {
     implementation("io.quarkus:quarkus-hibernate-reactive-panache")
     implementation("io.quarkus:quarkus-hibernate-validator")
     implementation("io.quarkus:quarkus-jackson")
+ 
     implementation("io.quarkus:quarkus-keycloak-authorization")
     implementation("io.quarkus:quarkus-oidc")
     implementation("io.quarkus:quarkus-reactive-mysql-client")
-    implementation("io.quarkus:quarkus-resteasy")
-    implementation("io.quarkus:quarkus-resteasy-mutiny")
+    //implementation("io.quarkus:quarkus-resteasy")
+    //implementation("io.quarkus:quarkus-resteasy-mutiny")
+    //implementation("io.quarkus:quarkus-resteasy-reactive")
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
     implementation("io.quarkus:quarkus-security")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
@@ -72,6 +74,3 @@ publishing {
     }
 }
 
-tasks.withType<JavaCompile>() {
-    options.encoding = "UTF-8"
-}

@@ -35,6 +35,56 @@ public class StudentController {
     @Inject
     StudentService studentService;
 
+    private static StudentCreateResponse convertToCreateResponse(Student student) {
+        StudentCreateResponse.Builder builder = StudentCreateResponse.newBuilder()
+        .setSchoolId(student.getSchoolId())
+        .setStudentId(student.getStudentId())
+        .setName(student.getName())
+        .setAge(student.getAge())
+        .setGender(Gender.valueOf(student.getGender()))
+        .setCreateId(student.getCreateId());
+        if (student.getCreateTime()!=null) {
+            builder.setCreateTime(Timestamps.fromMillis(student.getCreateTime().getTime()));
+        }//if
+        return builder.build();
+    }
+
+    private static StudentReadResponse convertToReadResponse(Student student) {
+        StudentReadResponse.Builder builder = StudentReadResponse.newBuilder()
+        .setSchoolId(student.getSchoolId())
+        .setStudentId(student.getStudentId())
+        .setName(student.getName())
+        .setAge(student.getAge())
+        .setGender(Gender.valueOf(student.getGender()))
+        .setCreateId(student.getCreateId());
+        if (student.getCreateTime()!=null) {
+            builder.setCreateTime(Timestamps.fromMillis(student.getCreateTime().getTime()));
+        }//if
+        if (student.getUpdateId()!=null) {
+            builder.setUpdateId(student.getUpdateId());
+        }//if
+        if (student.getUpdateTime()!=null) {
+            builder.setUpdateTime(Timestamps.fromMillis(student.getUpdateTime().getTime()));
+        }//if
+        return builder.build();
+    }
+
+    private static StudentUpdateResponse convertToUpdateResponse(Student student) {
+        StudentUpdateResponse.Builder builder = StudentUpdateResponse.newBuilder()
+        .setSchoolId(student.getSchoolId())
+        .setStudentId(student.getStudentId())
+        .setName(student.getName())
+        .setAge(student.getAge())
+        .setGender(Gender.valueOf(student.getGender()));
+        if (student.getUpdateId()!=null) {
+            builder.setUpdateId(student.getUpdateId());
+        }//if
+        if (student.getUpdateTime()!=null) {
+            builder.setUpdateTime(Timestamps.fromMillis(student.getUpdateTime().getTime()));
+        }//if
+        return builder.build();
+    }
+
     public Uni<StudentCreateResponse> create(StudentCreateRequest request) throws InvalidTenantException {
         log.info("creating schoolId=".concat(request.getSchoolId()).concat(" studentId=").concat(request.getStudentId()));
         Student creating = new Student();
@@ -48,17 +98,7 @@ public class StudentController {
                                                     .onItem()
                                                         .transformToUni(student -> 
                                                             Uni.createFrom()
-                                                                .item(
-                                                                    StudentCreateResponse.newBuilder()
-                                                                    .setSchoolId(student.getSchoolId())
-                                                                    .setStudentId(student.getStudentId())
-                                                                    .setAge(student.getAge())
-                                                                    .setGender(Gender.valueOf(student.getGender()))
-                                                                    .setName(student.getName())
-                                                                    .setCreateId(student.getCreateId())
-                                                                    .setCreateTime(Timestamps.fromMillis(student.getCreateTime().getTime()))
-                                                                    .build()
-                                                                )
+                                                                .item(convertToCreateResponse(student))
                                                                 .onFailure()
                                                                     .recoverWithItem(StudentCreateResponse.newBuilder().build())
                                                         );
@@ -75,24 +115,7 @@ public class StudentController {
         return studentService.read(studentPK)
                     .onItem()
                         .ifNotNull()
-                            .transformToUni(student -> {
-                                    StudentReadResponse.Builder builder = StudentReadResponse.newBuilder()
-                                        .setSchoolId(student.getSchoolId())
-                                        .setStudentId(student.getStudentId())
-                                        .setName(student.getName())
-                                        .setAge(student.getAge())
-                                        .setGender(Gender.valueOf(student.getGender()))
-                                        .setCreateId(student.getCreateId())
-                                        .setUpdateId(student.getUpdateId());
-                                    if (student.getCreateTime()!=null) {
-                                        builder.setCreateTime(Timestamps.fromMillis(student.getCreateTime().getTime()));
-                                    }//if
-                                    if (student.getUpdateTime()!=null) {
-                                        builder.setUpdateTime(Timestamps.fromMillis(student.getUpdateTime().getTime()));
-                                    }//if
-                                    return Uni.createFrom().item(builder.build());
-                                }
-                            )
+                            .transformToUni(student -> Uni.createFrom().item(convertToReadResponse(student)))
                     .onItem()
                         .ifNull()
                             .continueWith(StudentReadResponse.newBuilder().build())
@@ -110,17 +133,7 @@ public class StudentController {
         updatingStudent.setStudentId(request.getStudentId());
         return studentService.update(updatingStudent)
                 .onItem()
-                    .transformToUni(student -> Uni.createFrom().item(
-                        StudentUpdateResponse.newBuilder()
-                        .setSchoolId(student.getSchoolId())
-                        .setStudentId(student.getStudentId())
-                        .setAge(student.getAge())
-                        .setGender(Gender.valueOf(student.getGender()))
-                        .setName(student.getName())
-                        .setUpdateId(student.getUpdateId())
-                        .setUpdateTime(Timestamps.fromMillis(student.getUpdateTime().getTime()))
-                        .build()
-                    )
+                    .transformToUni(student -> Uni.createFrom().item(convertToUpdateResponse(student))
                 .onFailure()
                     .recoverWithItem(StudentUpdateResponse.newBuilder().build()));
     }
@@ -154,13 +167,7 @@ public class StudentController {
         if (students!=null && !students.isEmpty()) {
             students.stream().
                 forEach(student -> 
-                    listReponseBuilder.addStudents(StudentReadResponse.newBuilder()
-                        .setAge(student.getAge())
-                        .setGender(Gender.valueOf(student.getGender()))
-                        .setName(student.getName())
-                        .setSchoolId(student.getSchoolId())
-                        .setStudentId(student.getStudentId())
-                        .build())
+                        listReponseBuilder.addStudents(convertToReadResponse(student))
                 );
         }//if
         return Uni.createFrom().item(listReponseBuilder.build());

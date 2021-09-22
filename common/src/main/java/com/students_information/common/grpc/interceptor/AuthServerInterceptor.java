@@ -1,7 +1,7 @@
 package com.students_information.common.grpc.interceptor;
 
 import static io.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.OK;
+//import static javax.ws.rs.core.Response.Status.OK;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -175,7 +175,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                                 .then()
                                     .extract().response();
         int statusCode = response.getStatusCode();
-        if (statusCode!=OK.getStatusCode()) {
+        if (statusCode!=200) {//
             throw new AuthServerInterceptorException("Unauthenticated Status Code:".concat(String.valueOf(statusCode)));
         }//if
         JsonPath responseJson = response.jsonPath();

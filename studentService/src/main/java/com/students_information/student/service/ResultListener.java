@@ -58,18 +58,12 @@ public class ResultListener {
         return Panache.withTransaction(()-> Result.findById(result.getPK())
                                                 .onItem()
                                                     .ifNotNull()
-                                                        .invoke(updatingObj -> result.persist()
-                                                                    //{
-                                                                    // Result updating = (Result)updatingObj;
-                                                                    // updating.setArt(result.getArt());
-                                                                    // updating.setChemistry(result.getChemistry());
-                                                                    // updating.setMaths(result.getMaths());
-                                                                    // updating.setCreateId(result.getCreateId());
-                                                                    // updating.setCreateTime(result.getCreateTime());
-                                                                    // updating.setUpdateId(result.getUpdateId());
-                                                                    // updating.setUpdateTime(result.getUpdateTime());
-                                                                    // updating.persist();
-                                                            //}
+                                                        .invoke(updatingObj -> 
+                                                                    {
+                                                                    Result updating = (Result)updatingObj;
+                                                                    updating.copyWithAuditTrail(result);
+                                                                    updating.persist();
+                                                                }
                                                             )
                                                 .onItem()
                                                     .ifNull()

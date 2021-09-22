@@ -103,6 +103,7 @@ public class ResultService {
         log.info("listing All");
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
+            log.info("by tenantId=".concat(authHolder.getTenantId()));
             return Result.findBySchooldId(authHolder.getTenantId());
         }//if
         List<Result> resultList = Result.listAll();
