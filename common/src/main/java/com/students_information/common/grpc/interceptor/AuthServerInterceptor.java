@@ -128,7 +128,7 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
 
     /**
      * According to https://stackoverflow.com/questions/48274251/keycloak-access-token-validation-end-point
-     * Access http://localhost:8180/auth/realms/studentgrade-realm/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
+     * Access http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
      * @param authKey
      */
     private AccessToken authenticateAuthorizationKey(String authKey) throws VerificationException, AuthServerInterceptorException {

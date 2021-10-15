@@ -1,0 +1,24 @@
+version: "3.9"
+
+networks:
+  default:
+    name: studentgrade-network
+    driver: bridge
+
+services:
+  mariadb:
+    image: figker/figker-mariadb
+    ports:
+      - 3306:3306
+    environment:
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
+      - "MYSQL_DATABASE=${MYSQL_DATABASE}"
+      - "MYSQL_USER=${MYSQL_USER}"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+      # - "MYSQL_INITDB_SKIP_TZINFO=TRUE"
+    # command: /bin/sh -c 'ls -l /etc/my.cnf; tail -n100 /etc/my.cnf;ls -l /etc/my.cnf.d;tail -n100 /etc/my.cnf.d/figker.cnf'
+    restart: always
+    healthcheck:
+      test: ["CMD", sh -c "mysqladmin -u $$MYSQL_USER -p $$MYSQL_PASSWORD ping -h localhost"]
+      timeout: 20s
+      retries: 10

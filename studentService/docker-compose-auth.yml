@@ -1,0 +1,30 @@
+version: "3.9"
+
+networks:
+  studentgrade-network:
+    external: true
+
+services:
+  keycloak:
+    image: figker/figker-keycloak
+    restart: always
+    ports:
+      - "8180:8080"
+      - "8443:8443"
+    volumes:
+      - ./deployment/authserver/data:/data
+      - ./deployment/authserver/certs/:/etc/x509/https # map certificates to container
+    environment:
+      - "KEYCLOAK_USER=${KEYCLOAK_USER}"
+      - "KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}"
+      - "KEYCLOAK_IMPORT=/data/studentgrade-abc.json,/data/studentgrade-xyz.json"
+      - "KEYCLOAK_HTTP_PORT=${KEYCLOAK_HTTP_PORT}"
+      - "KEYCLOAK_HTTPS_PORT=${KEYCLOAK_HTTPS_PORT}"
+      # - KEYCLOAK_HOSTNAME: sub.example.ocm
+      - "DB_VENDOR=mariadb"
+      - "DB_ADDR=mariadb"
+      - "DB_DATABASE=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+    networks: 
+      - studentgrade-network
