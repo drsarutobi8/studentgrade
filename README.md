@@ -42,7 +42,7 @@ docker logs cc730644109a -f
 > ./gradlew :studentService:quarkusDev
 
 ### Additional Keycloak Settings
-* Regenerate Secret for client studentgrade-service and copy the value to below curl command
+* Change access type of client studentgrade-service to 'public'
 * Add user 'st1' (John Doe) with password 'st1' (with disabling temporary password) 
 * Assign realm role 'user' and client role 'student'
 
