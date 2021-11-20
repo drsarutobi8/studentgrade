@@ -12,8 +12,8 @@ services:
       - "8180:8080"
       - "8443:8443"
     volumes:
-      - ./deployment/authserver/data:/data
-      - ./deployment/authserver/certs/:/etc/x509/https # map certificates to container
+      - ./deployment/authserver/data:/data:rw
+      - ./deployment/authserver/certs/:/etc/x509/https:rw # map certificates to container
     environment:
       - "KEYCLOAK_USER=${KEYCLOAK_USER}"
       - "KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}"

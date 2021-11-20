@@ -53,16 +53,16 @@ docker logs cc730644109a -f
 ## Using BloomRPC
 * Result Server running at localhost port 9000
 * Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "localhost"
-* Student Server running at localhost port 9100
+* Student Server running at localhost port 9200
 * Add TLS connection access by adding root certificate "studentService/src/main/resources/tls/ca.pem" and target "localhost"
 * Run below command to get access token
 ```
 export access_token=$(
-curl -X POST http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:ea92ff27-0da7-4f71-aff2-63786c394033  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token'
+curl -X POST https://auth.figker.com:8443/auth/realms/studentgrade-abc/protocol/openid-connect/token --user studentgrade-service:ea92ff27-0da7-4f71-aff2-63786c394033  -H 'content-type: application/x-www-form-urlencoded' -d 'username=st1&password=st1&grant_type=password' | jq --raw-output '.access_token'
 );
 echo $access_token;
 curl -X POST \
-  http://localhost:8180/auth/realms/studentgrade-abc/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
+  https://auth.figker.com:8443/auth/realms/studentgrade-abc/protocol/openid-connect/userinfo -H "Authorization: Bearer ${access_token}" 
 ```
 * In Metadata section add following json:
 {

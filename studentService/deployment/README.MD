@@ -1,28 +1,15 @@
 # Docker Reference
 
-## To Start Servers
+## To Start Servers (first time)
 * Start MariaDB Server (!!Wait until it complete initiated database before next step)
-> docker-compose -f docker-compose-db.yml up
+> docker-compose -f docker-compose-db.yml up -d
+
+* Install Certbot Refering to [Keycloak SSL setup using docker image](https://newbedev.com/keycloak-ssl-setup-using-docker-image) and copy tls.crt and tls.key in deployment/auth/certs directory (PS. Self-sign certificate does not work well with flutter mobile)
 
 * Start Keycloak Server (!!Wait unit it complete initialized database about 10 minutes)
-> docker-compose -f docker-compose-auth.yml up
+> docker-compose -f docker-compose-auth.yml up -d
 
-## References
-[Keycloak SSL setup using docker image](https://newbedev.com/keycloak-ssl-setup-using-docker-image)
-
-* Generate a self-signed cert using the keytool
-> keytool -genkey -alias localhost -keyalg RSA -keystore keycloak.jks -validity 10950
-
-* convert .jks to .p12
-> keytool -importkeystore -srckeystore keycloak.jks -destkeystore keycloak.p12 -deststoretype PKCS12
-
-* generate .crt from .p12 keystore
-> openssl pkcs12 -in keycloak.p12 -nokeys -out tls.crt
-
-* generate .key from .p12 keystore
-> openssl pkcs12 -in keycloak.p12 -nocerts -nodes -out tls.key
-
-* Then use the tls.crt and tls.key for volume mount /etc/x509/https
+* Download keys to local resources/tls and deployment/authserver/certs
 
 
 ## Useful Manual Docker Commands
@@ -33,7 +20,7 @@
 > docker run --net studentgrade-network --name keycloak-db -e MARIADB_ROOT_PASSWORD=keycloak-db -e MYSQL_DATABASE=keycloak-db -e MYSQL_USER=keycloak-db -e MYSQL_PASSWORD=keycloak-db -d mariadb:latest
 
 * To test mysql from another client in same network
-> docker run -it --network studentgrade-network --rm mariadb mysql -hkeycloak-db -ukeycloak-db -pkeycloak-db keycloak-db
+> docker run -it --network studentgrade-network --rm mariadb mysql -hmariadb -uquarkus_test -pquarkus_test quarkus_test
 
 * To start Keycloak with MariaDB
 > docker run --net studentgrade-network --name keycloak-app -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_HTTP_PORT=8080 -e KEYCLOAK_HTTPS_PORT=8443 -e KEYCLOAK_IMPORT=/data/studentgrade-abc.json,/data/studentgrade-xyz.json -e DB_VENDOR=mariadb -e DB_ADDR=keycloak-db -e DB_DATABASE=keycloak-db -e DB_USER=keycloak-db -e DB_PASSWORD=keycloak-db  -d figker/figker-keycloak:1.0.0-SNAPSHOT
