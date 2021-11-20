@@ -46,15 +46,13 @@ docker logs cc730644109a -f
 * Add user 'st1' (John Doe) with password 'st1' (with disabling temporary password) 
 * Assign realm role 'user' and client role 'student'
 
-*** REPLACE YOUR CLIENT SECRET ***
-
 
 # To Test
 ## Using BloomRPC
 * Result Server running at localhost port 9000
-* Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "localhost"
+* Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "auth.figker.com"
 * Student Server running at localhost port 9200
-* Add TLS connection access by adding root certificate "studentService/src/main/resources/tls/ca.pem" and target "localhost"
+* Add TLS connection access by adding root certificate "studentService/src/main/resources/tls/ca.pem" and target "auth.figker.com"
 * Run below command to get access token
 ```
 export access_token=$(
