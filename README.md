@@ -46,6 +46,9 @@ docker logs cc730644109a -f
 * Add user 'st1' (John Doe) with password 'st1' (with disabling temporary password) 
 * Assign realm role 'user' and client role 'student'
 
+## To run Envoy Proxy Server
+> docker run -p 8080:8080 -v $(pwd)/studentService/deployment/proxy/envoy.yaml:/etc/envoy/envoy.yaml -e ENVOY_UID=$(id -u) envoyproxy/envoy:v1.17.0
+
 
 # To Test
 ## Using BloomRPC
