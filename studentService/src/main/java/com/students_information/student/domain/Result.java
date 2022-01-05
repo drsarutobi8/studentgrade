@@ -1,23 +1,20 @@
 package com.students_information.student.domain;
 
+import java.sql.Timestamp;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students_information.common.tenant.ITenantValue;
 import com.students_information.common.value.StudentPK;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.smallrye.mutiny.Uni;
-
-import java.util.List;
-import java.sql.Timestamp;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,6 +23,7 @@ import lombok.ToString;
 
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper=false)
 @NoArgsConstructor
 @ToString
 @Entity
@@ -50,9 +48,9 @@ public class Result extends PanacheEntityBase implements ITenantValue {
     String updateId;
     Timestamp updateTime;
 
-    @OneToOne(mappedBy="result")
+    @OneToOne(mappedBy = "result")
     @ToString.Exclude
-	@EqualsAndHashCode.Exclude
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     Student student;
 
@@ -76,22 +74,24 @@ public class Result extends PanacheEntityBase implements ITenantValue {
     }
 
     public StudentPK getPK() {
-        if (pk==null) {
+        if (pk == null) {
             pk = new StudentPK(schoolId, studentId);
-        }//if
+        } // if
         return pk;
     }
 
     public static Uni<List<Result>> findBySchoolId(String schoolId) {
         return find("schoolId", schoolId).list();
     }
+
     public static Uni<Long> deleteBySchoolId(String schoolId) {
         return delete("schoolId", schoolId);
     }
 
-    public static Uni<List<Result>> findByStudentId(String studentId){
+    public static Uni<List<Result>> findByStudentId(String studentId) {
         return find("studentId", studentId).list();
     }
+
     public static Uni<Long> deleteByStudentId(String studentId) {
         return delete("studentId", studentId);
     }

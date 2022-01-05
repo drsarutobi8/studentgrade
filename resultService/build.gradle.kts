@@ -26,7 +26,6 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
-    //COMMENT HERE FOR NOW SINCE THE CLIENT INTERCEPTOR IS NOT WORKING
     implementation(project(":common"))
     
     implementation(project(":resultApi"))

@@ -31,6 +31,7 @@ import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper=false)
 @NoArgsConstructor
 @ToString
 @Entity
