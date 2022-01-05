@@ -11,9 +11,9 @@ pluginManagement {
     }
     plugins {
         id(quarkusPluginId) version quarkusPluginVersion
-        id("io.freefair.lombok") version "6.0.0-m2"
+        id("io.freefair.lombok") version "6.3.0"
         id("org.kordamp.gradle.jandex") version "0.11.0"
-        id("com.palantir.docker-compose") version "0.27.0"
+        id("com.palantir.docker-compose") version "0.32.0"
         //id("com.palantir.docker-run") version "0.27.0"
     }
 }

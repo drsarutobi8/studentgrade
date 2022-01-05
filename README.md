@@ -83,6 +83,23 @@ docker-compose -f docker-compose-auth.yml up -d
 ```
 
 ### To run Envoy Proxy Server (for GRPC-Web)
+* Check your current ip
+```
+ifconfig
+```
+* Copy ip address and replace in /studentService/deployment/proxy/envoy.yaml
+```
+load_assignment:
+      cluster_name: cluster_0
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 10.108.139.137 #change your address here (ifconfig)
+                    port_value: 9200
+```
+* Run server
 ```
 docker run -p 9280:9280 -v $(pwd)/studentService/deployment/proxy/envoy.yaml:/etc/envoy/envoy.yaml -e ENVOY_UID=$(id -u) envoyproxy/envoy:v1.17.0
 ```
@@ -117,7 +134,8 @@ chmod 555 ~/Downloads/BloomRPC-1.5.3.AppImage
 ```
 ~/Download/BloomRPC-1.5.3.AppImage
 ```
-* Add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "auth.figker.com"
+* For Result Server, and Student Server (non-proxy) , add TLS connection access by adding root certificate "resultService/src/main/resources/tls/ca.pem" and target "auth.figker.com"
+* For Student Server (proxy), disable TLS and use root certificate. Change option to Web (instead of GRPC)
 * Add proto files 
   * For resultService adding resultApi/src/main/proto/result.proto
   * For studentService adding studentApi/src/main/proto/student.proto

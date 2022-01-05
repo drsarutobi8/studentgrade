@@ -43,6 +43,20 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
             final Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
+        return next.startCall(new SimpleForwardingServerCall<ReqT, RespT>(call) {
+            @Override
+            public void sendHeaders(Metadata responseHeaders) {
+                responseHeaders.put(CUSTOM_HEADER_KEY, "customRespondValue");
+                super.sendHeaders(responseHeaders);
+            }
+        }, requestHeaders);
+    }
+
+    /*
+    Disabled for now since the oidcconnect is not working with flutter 2.8.1
+    @Override
+    public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call,
+            final Metadata requestHeaders, ServerCallHandler<ReqT, RespT> next) {
         log.info("receiving call service:" + call.getMethodDescriptor().getFullMethodName());
         log.info("header received from client:");
 
@@ -122,8 +136,8 @@ public class AuthServerInterceptor implements ServerInterceptor, Prioritized {
                 super.sendHeaders(responseHeaders);
             }
         }, requestHeaders);
-
     }
+    */
 
     @ConfigProperty(name = "realm.prefix")
     String realmPrefix;
