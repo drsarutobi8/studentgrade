@@ -66,9 +66,6 @@ public class StudentService {
                                                         {
                                                              Student st = (Student)stObj;
                                                              st.copy(student);
-                                                             //st.setAge(student.getAge());
-                                                             //st.setGender(student.getGender());
-                                                             //st.setName(student.getName());
                                                              st.setUpdateId(student.getUpdateId());
                                                              st.setUpdateTime(student.getUpdateTime());
                                                              st.persist();
@@ -101,7 +98,7 @@ public class StudentService {
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             if (authHolder.getTenantId()!=null) {
-                return Student.findBySchooldId(authHolder.getTenantId());
+                return Student.findBySchoolId(authHolder.getTenantId());
             }//if
         }//if
         return Student.listAll();

@@ -104,7 +104,7 @@ public class Student extends PanacheEntityBase implements ITenantValue{
     //     return delete("schoolId=?1 AND studentId=?2", schoolId, studentId);
     // }
 
-    public static Uni<List<Student>> findBySchooldId(String schoolId) {
+    public static Uni<List<Student>> findBySchoolId(String schoolId) {
         return find("schoolId", schoolId).list();
     }
     public static Uni<Long> deleteBySchoolId(String schoolId) {
