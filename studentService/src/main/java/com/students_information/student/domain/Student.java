@@ -3,7 +3,6 @@ package com.students_information.student.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.students_information.common.tenant.ITenantValue;
-import com.students_information.common.value.StudentPK;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -62,10 +61,10 @@ public class Student extends PanacheEntityBase implements ITenantValue{
     String updateId;
     Timestamp updateTime;
 
-    @OneToOne(cascade=CascadeType.ALL)
     @ToString.Exclude
 	@EqualsAndHashCode.Exclude
     @JsonIgnore
+    @OneToOne(cascade=CascadeType.ALL)
     @JoinColumns({
         @JoinColumn(name = "schoolId", referencedColumnName = "schoolId", nullable = false, insertable = false, updatable = false),
         @JoinColumn(name = "studentId", referencedColumnName = "studentId", nullable = false, insertable = false, updatable = false)

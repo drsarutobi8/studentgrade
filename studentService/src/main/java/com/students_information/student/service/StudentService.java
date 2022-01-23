@@ -3,8 +3,8 @@ package com.students_information.student.service;
 import com.students_information.common.grpc.interceptor.BearerAuthHolder;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
-import com.students_information.common.value.StudentPK;
 import com.students_information.student.domain.Student;
+import com.students_information.student.domain.StudentPK;
 
 import java.util.List;
 import java.util.NoSuchElementException;

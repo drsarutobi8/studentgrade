@@ -1,15 +1,11 @@
 package com.students_information.result.grpc.service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
 import com.students_information.common.tenant.InvalidTenantException;
-import com.students_information.common.value.StudentPK;
-import com.students_information.result.domain.Result;
 import com.students_information.result.grpc.controller.ResultController;
-import com.students_information.result.stubs.Grade;
 import com.students_information.result.stubs.ResultCreateRequest;
 import com.students_information.result.stubs.ResultCreateResponse;
 import com.students_information.result.stubs.ResultDeleteRequest;

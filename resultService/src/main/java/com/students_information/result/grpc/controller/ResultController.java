@@ -5,8 +5,8 @@ import com.google.protobuf.util.Timestamps;
 import com.students_information.common.event.EventType;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.value.DeletedEntity;
-import com.students_information.common.value.StudentPK;
 import com.students_information.result.domain.Result;
+import com.students_information.result.domain.ResultPK;
 import com.students_information.result.event.ResultCreated;
 import com.students_information.result.event.ResultDeleted;
 import com.students_information.result.event.ResultEvent;
@@ -112,11 +112,11 @@ public class ResultController {
 
     public ResultReadResponse read(ResultReadRequest req) throws InvalidTenantException {
         log.info("reading schoolId=".concat(req.getSchoolId()).concat(" studentId=").concat(req.getStudentId()));
-        StudentPK studentPK = new StudentPK();
-        studentPK.setSchoolId(req.getSchoolId());
-        studentPK.setStudentId(req.getStudentId());
+        ResultPK resultPK = new ResultPK();
+        resultPK.setSchoolId(req.getSchoolId());
+        resultPK.setStudentId(req.getStudentId());
 
-        Result result = resultService.read(studentPK);
+        Result result = resultService.read(resultPK);
         return convertToReadResponse(result);
     }
 
@@ -138,15 +138,15 @@ public class ResultController {
     public ResultDeleteResponse delete(ResultDeleteRequest req) throws InvalidTenantException {
         log.info("deleting schoolId=".concat(req.getSchoolId()).concat(" studentId=").concat(req.getStudentId()));
         
-        StudentPK studentPK = new StudentPK();
-        studentPK.setSchoolId(req.getSchoolId());
-        studentPK.setStudentId(req.getStudentId());
+        ResultPK resultPK = new ResultPK();
+        resultPK.setSchoolId(req.getSchoolId());
+        resultPK.setStudentId(req.getStudentId());
 
-        ResultDeleted deletedEvent = new ResultDeleted(resultService.delete(studentPK), studentPK);
+        ResultDeleted deletedEvent = new ResultDeleted(resultService.delete(resultPK), resultPK);
         resultEventEmitter.send(Message.of(deletedEvent));
         return ResultDeleteResponse.newBuilder()
-            .setSchoolId(deletedEvent.getStudentPK().getSchoolId())
-            .setStudentId(deletedEvent.getStudentPK().getStudentId())
+            .setSchoolId(deletedEvent.getResultPK().getSchoolId())
+            .setStudentId(deletedEvent.getResultPK().getStudentId())
             .setDeletedCount(deletedEvent.getDeletedEntity().getDeletedCount())
             .setDeleteId(deletedEvent.getDeletedEntity().getDeleteId())
             .setDeleteTime(Timestamps.fromMillis(deletedEvent.getDeletedEntity().getDeleteTime().getTime()))

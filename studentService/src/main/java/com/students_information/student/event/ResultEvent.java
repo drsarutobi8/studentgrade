@@ -2,8 +2,8 @@ package com.students_information.student.event;
 
 import com.students_information.common.event.EventType;
 import com.students_information.common.value.DeletedEntity;
-import com.students_information.common.value.StudentPK;
 import com.students_information.student.domain.Result;
+import com.students_information.student.domain.StudentPK;
 
 import java.sql.Timestamp;
 

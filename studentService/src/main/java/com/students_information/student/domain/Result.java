@@ -11,7 +11,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students_information.common.tenant.ITenantValue;
-import com.students_information.common.value.StudentPK;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.smallrye.mutiny.Uni;
@@ -30,21 +29,16 @@ import lombok.ToString;
 @IdClass(StudentPK.class)
 @Table(name = "result")
 public class Result extends PanacheEntityBase implements ITenantValue {
-
     private transient StudentPK pk;
 
-    @Id
-    String schoolId;
-    @Id
-    String studentId;
+    @Id String schoolId;
+    @Id String studentId;
 
     String maths;
     String art;
     String chemistry;
-
     String createId;
     Timestamp createTime;
-
     String updateId;
     Timestamp updateTime;
 
@@ -68,16 +62,16 @@ public class Result extends PanacheEntityBase implements ITenantValue {
         setUpdateTime(other.getUpdateTime());
     }
 
-    @Override
-    public String getTenantId() {
-        return schoolId;
-    }
-
     public StudentPK getPK() {
         if (pk == null) {
             pk = new StudentPK(schoolId, studentId);
         } // if
         return pk;
+    }
+
+    @Override
+    public String getTenantId() {
+        return schoolId;
     }
 
     public static Uni<List<Result>> findBySchoolId(String schoolId) {
@@ -86,13 +80,5 @@ public class Result extends PanacheEntityBase implements ITenantValue {
 
     public static Uni<Long> deleteBySchoolId(String schoolId) {
         return delete("schoolId", schoolId);
-    }
-
-    public static Uni<List<Result>> findByStudentId(String studentId) {
-        return find("studentId", studentId).list();
-    }
-
-    public static Uni<Long> deleteByStudentId(String studentId) {
-        return delete("studentId", studentId);
     }
 }

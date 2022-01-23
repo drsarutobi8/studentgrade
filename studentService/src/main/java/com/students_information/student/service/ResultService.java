@@ -11,9 +11,9 @@ import javax.inject.Inject;
 import com.students_information.common.grpc.interceptor.BearerAuthHolder;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
-import com.students_information.common.value.StudentPK;
 import com.students_information.student.domain.Result;
 import com.students_information.student.domain.Student;
+import com.students_information.student.domain.StudentPK;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;

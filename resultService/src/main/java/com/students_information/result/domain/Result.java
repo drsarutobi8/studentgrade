@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import com.students_information.common.tenant.ITenantValue;
-import com.students_information.common.value.StudentPK;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import lombok.AllArgsConstructor;
@@ -25,10 +24,10 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "result")
-@IdClass(StudentPK.class)
+@IdClass(ResultPK.class)
 public class Result extends PanacheEntityBase implements ITenantValue {
 
-    private transient StudentPK pk;
+    private transient ResultPK pk;
 
     @Id
     String schoolId;
@@ -50,9 +49,9 @@ public class Result extends PanacheEntityBase implements ITenantValue {
         return schoolId;
     }
 
-    public StudentPK getPK() {
+    public ResultPK getPK() {
         if (pk==null) {
-            pk = new StudentPK(schoolId, studentId);
+            pk = new ResultPK(schoolId, studentId);
         }//if
         return pk;
     }

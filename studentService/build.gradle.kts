@@ -56,6 +56,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java-util")
 
     testImplementation("io.quarkus:quarkus-junit5")
+    testImplementation("io.quarkus:quarkus-panache-mock")
     testImplementation("org.awaitility:awaitility")
     testImplementation("org.assertj:assertj-core")
 }

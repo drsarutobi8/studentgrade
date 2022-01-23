@@ -6,12 +6,12 @@ import java.util.NoSuchElementException;
 import javax.inject.Inject;
 
 import com.students_information.common.tenant.InvalidTenantException;
-import com.students_information.common.value.StudentPK;
 import com.students_information.result.stubs.MutinyResultServiceGrpc;
 import com.students_information.result.stubs.ResultReadRequest;
 import com.students_information.result.stubs.ResultReadResponse;
 import com.students_information.student.domain.Result;
 import com.students_information.student.domain.Student;
+import com.students_information.student.domain.StudentPK;
 import com.students_information.student.service.ResultService;
 import com.students_information.student.service.StudentService;
 import com.students_information.student.grpc.controller.StudentController;

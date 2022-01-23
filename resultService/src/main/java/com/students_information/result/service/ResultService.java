@@ -4,9 +4,9 @@ import com.students_information.common.grpc.interceptor.BearerAuthHolder;
 import com.students_information.common.tenant.InvalidTenantException;
 import com.students_information.common.tenant.TenantValidator;
 import com.students_information.common.value.DeletedEntity;
-import com.students_information.common.value.StudentPK;
-
 import com.students_information.result.domain.Result;
+import com.students_information.result.domain.ResultPK;
+
 import org.hibernate.service.spi.InjectService;
 import org.hibernate.sql.Delete;
 
@@ -30,7 +30,7 @@ public class ResultService {
 
     @Transactional
     public Result create(Result creating) throws InvalidTenantException {
-        log.info("creating studentPK=".concat(creating.getPK().toString()));
+        log.info("creating resultPK=".concat(creating.getPK().toString()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
             TenantValidator.validate(authHolder.getTenantId(), creating);
@@ -45,21 +45,21 @@ public class ResultService {
     }
 
     @Transactional
-    public Result read(StudentPK studentPK) throws InvalidTenantException {
-        log.info("reading studentPK=".concat(studentPK.toString()));
+    public Result read(ResultPK resultPK) throws InvalidTenantException {
+        log.info("reading resultPK=".concat(resultPK.toString()));
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), studentPK);
+            TenantValidator.validate(authHolder.getTenantId(), resultPK);
         }//if
-        return Result.findById(studentPK);
+        return Result.findById(resultPK);
     }
 
     @Transactional
     public Result update(Result updating) throws InvalidTenantException {
-        log.info("updating studentPK=".concat(updating.getPK().toString()));
+        log.info("updating resultPK=".concat(updating.getPK().toString()));
 
-        StudentPK studentPK = new StudentPK(authHolder.getTenantId(),updating.getStudentId());
-        Result updatingResult = Result.findById(studentPK);
+        ResultPK resultPK = new ResultPK(authHolder.getTenantId(),updating.getStudentId());
+        Result updatingResult = Result.findById(resultPK);
         if (updatingResult==null) {
             throw new NoSuchElementException("Unknown Result with studentId=".concat(updating.getStudentId()));
         }//if
@@ -81,18 +81,18 @@ public class ResultService {
     }
 
     @Transactional
-    public DeletedEntity delete(StudentPK studentPK) throws InvalidTenantException {
-        log.info("deleting studentPK=".concat(studentPK.toString()));
+    public DeletedEntity delete(ResultPK resultPK) throws InvalidTenantException {
+        log.info("deleting resultPK=".concat(resultPK.toString()));
         DeletedEntity deletedEntity = new DeletedEntity();
         if (authHolder!=null && authHolder.getAccessToken()!=null && authHolder.getAccessToken().getPreferredUsername()!=null) {
             log.info("by userId=".concat(authHolder.getAccessToken().getPreferredUsername()));
-            TenantValidator.validate(authHolder.getTenantId(), studentPK);
+            TenantValidator.validate(authHolder.getTenantId(), resultPK);
             deletedEntity.setDeleteId(authHolder.getAccessToken().getPreferredUsername());
         }//if
         deletedEntity.setDeleteTime(new Timestamp(System.currentTimeMillis()));
-        boolean deleted = Result.deleteById(studentPK);
+        boolean deleted = Result.deleteById(resultPK);
         if (!deleted) {
-            throw new IllegalStateException("Cannot delete studentPK=".concat(studentPK.toString()));
+            throw new IllegalStateException("Cannot delete resultPK=".concat(resultPK.toString()));
         }//if
         deletedEntity.setDeletedCount(1l);
         return deletedEntity;

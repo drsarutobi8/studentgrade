@@ -3,11 +3,10 @@ package com.students_information.student.grpc.controller;
 import com.google.protobuf.util.Timestamps;
 
 import com.students_information.common.tenant.InvalidTenantException;
-import com.students_information.common.value.StudentPK;
 import com.students_information.student.domain.Student;
+import com.students_information.student.domain.StudentPK;
 import com.students_information.student.service.StudentService;
 import com.students_information.student.stubs.Gender;
-import com.students_information.student.stubs.Grade;
 import com.students_information.student.stubs.StudentCreateRequest;
 import com.students_information.student.stubs.StudentCreateResponse;
 import com.students_information.student.stubs.StudentDeleteRequest;

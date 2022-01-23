@@ -1,4 +1,6 @@
-package com.students_information.common.value;
+// Generated from st4/pkClass.stg by ANTLR 4.9.3
+
+package com.students_information.result.domain;
 
 import com.students_information.common.tenant.ITenantValue;
 import java.io.Serializable;
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class StudentPK implements Serializable, ITenantValue{
+public class ResultPK implements Serializable, ITenantValue {
     String schoolId;
     String studentId;
 

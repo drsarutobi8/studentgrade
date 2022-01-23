@@ -4,9 +4,9 @@ import com.google.protobuf.util.Timestamps;
 
 import com.students_information.common.event.EventType;
 import com.students_information.common.tenant.InvalidTenantException;
-import com.students_information.common.value.StudentPK;
 import com.students_information.result.stubs.ResultCreateResponse;
 import com.students_information.student.domain.Result;
+import com.students_information.student.domain.StudentPK;
 import com.students_information.student.event.ResultEvent;
 
 import java.util.NoSuchElementException;
