@@ -4,18 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.panache.mock.PanacheMock;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 import io.smallrye.mutiny.Uni;
 
+import org.hibernate.reactive.mutiny.Mutiny;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import org.mockito.Mockito;
 
 @QuarkusTest
 public class StudentTest {
+
+    @InjectMock
+    Mutiny.Session session;
 
     @Test
     public void testPanacheMocking() {
@@ -49,14 +56,25 @@ public class StudentTest {
         student1.setCreateId("createId");
         student1.setCreateTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
+        // TEST GETPK
+        Assertions.assertEquals(new StudentPK(student1.getSchoolId(), student1.getStudentId()), student1.getPK());
+
         Student student2 = new Student();
         student2.setSchoolId("schoolId");
         student2.setStudentId("studentId2");
+        
+        // TEST COPY
+        student2.copy(student1);
+        Assertions.assertEquals(student1.getAge(), student2.getAge());
+        Assertions.assertEquals(student1.getName(), student2.getName());
+        Assertions.assertEquals(student1.getGender(), student2.getGender());
+        
+        // TEST COPY WITH AUDITTRIAL
+        student2.copyWithAuditTrail(student1);
+        Assertions.assertEquals(student1.getCreateId(), student2.getCreateId());
+        Assertions.assertEquals(student1.getCreateTime(), student2.getCreateTime());
+        
         student2.setName("name2");
-        student2.setAge(1);
-        student2.setGender("M");
-        student2.setCreateId("createId");
-        student2.setCreateTime(new java.sql.Timestamp(System.currentTimeMillis()));
 
         // TEST CREATE 1
         entitySubscriber = student1.persist().subscribe().withSubscriber(UniAssertSubscriber.create());
@@ -114,6 +132,8 @@ public class StudentTest {
         longSubscriber.assertCompleted().assertItem(1L);
 
         // CHECK ACTIVITES
+        Mockito.verify(session, Mockito.times(3)).persist(Mockito.any());
+
         PanacheMock.verify(Student.class, Mockito.times(3)).count();
         PanacheMock.verify(Student.class, Mockito.atLeastOnce()).deleteById(Mockito.any());
         PanacheMock.verify(Student.class, Mockito.atLeastOnce()).deleteBySchoolId(Mockito.any());
